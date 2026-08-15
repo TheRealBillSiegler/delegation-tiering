@@ -1,6 +1,24 @@
 # delegation-tiering
 
-Explicit model/effort tiering for every delegated agent, enforced. Built from an Anthropic article and the official docs, adapted for supervised delegation. Formerly half of `delegation-steering`; its sibling, the [steering-claude-code](https://github.com/TheRealBillSiegler/claude-plugins/tree/main/plugins/steering-claude-code) decision guide, is now its own single-skill plugin.
+Explicit model/effort tiering for every delegated agent, enforced. Built from an Anthropic article and the official docs, adapted for supervised delegation. Formerly half of `delegation-steering`; its sibling, the [steering-claude-code](https://github.com/TheRealBillSiegler/steering-claude-code) decision guide, is now its own single-skill plugin.
+
+## Install
+
+Via the central marketplace, alongside the other Siegler plugins:
+
+```text
+/plugin marketplace add TheRealBillSiegler/siegler-plugins
+/plugin install delegation-tiering@siegler-plugins
+```
+
+Or direct from this repo, which self-registers as a one-plugin marketplace:
+
+```text
+/plugin marketplace add TheRealBillSiegler/delegation-tiering
+/plugin install delegation-tiering@delegation-tiering
+```
+
+The doubled name in the second form is correct — the marketplace and the plugin share the repo's name.
 
 ## Components
 
@@ -25,7 +43,7 @@ In a live session with the plugin enabled:
 /delegation-tiering:canary
 ```
 
-It installs the always-loaded rule file and proves both deny paths live. Run it because the gate's worst failure is silent: if `node` does not resolve when the hook runs, the hook produces no output, and a hook with no output is an allow — no denial, no ledger line, no error. The plugin looks installed and enforces nothing. The canary is the detector; the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/COVERAGE.md) (dependency A9).
+It installs the always-loaded rule file and proves both deny paths live. Run it because the gate's worst failure is silent: if `node` does not resolve when the hook runs, the hook produces no output, and a hook with no output is an allow — no denial, no ledger line, no error. The plugin looks installed and enforces nothing. The canary is the detector; the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) (dependency A9).
 
 ## Configuration
 
@@ -36,9 +54,9 @@ It installs the always-loaded rule file and proves both deny paths live. Run it 
 
 1. **Always-loaded rule** (`~/.claude/rules/delegation.md`, installed by the canary command): the standing rule survives compaction and holds without skill invocation — a probabilistic floor: it depends on the model following it, unlike the deterministic hook below.
 2. **Skill** (on invocation): the judgment layer — which tier is lowest-sufficient.
-3. **Hook** (every Agent/Workflow call): the deterministic gate. It has documented limits and one escape hatch — the delegation-tiering skill's Enforcement section states them operationally, and the repo's [coverage matrix](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/COVERAGE.md) is the canonical, dated claim set for every path and gap.
+3. **Hook** (every Agent/Workflow call): the deterministic gate. It has documented limits and one escape hatch — the delegation-tiering skill's Enforcement section states them operationally, and the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) is the canonical, dated claim set for every path and gap.
 
-The ledger sits alongside as the observability layer: the gate can force models to be *explicit*, but only review of actual choices can show whether tiering judgment held. Its weekly summary (run from the plugin repo) is the evidence base for a deferred hardening — denying top-tier Agent calls that state no rationale — described in the repo's [docs/ROADMAP.md](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/ROADMAP.md).
+The ledger sits alongside as the observability layer: the gate can force models to be *explicit*, but only review of actual choices can show whether tiering judgment held. Its weekly summary (run from the plugin repo) is the evidence base for a deferred hardening — denying top-tier Agent calls that state no rationale — described in the repo's [docs/ROADMAP.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/ROADMAP.md).
 
 ### Coverage map
 
@@ -56,11 +74,11 @@ In text: Agent calls and Workflow launches hit the PreToolUse gate, which denies
 
 ## Sunset criterion
 
-This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665, #44976, #67898), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
+This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665, #44976, #67898), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
 
 ## Source fidelity
 
-Every claim in this plugin carries one of three provenance tiers — article digest, doc page, or dated live test — defined in the repo's [Anchoring policy](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/REMEDIATION.md#anchoring-policy). The repo's [coverage matrix](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/COVERAGE.md) names the doc page behind each mechanic; where the docs are silent, the claim says so. Everything used to *build, verify, and maintain* the plugin — evals, dated article digests, verification dates, drift watching — is in the [plugin repo](https://github.com/TheRealBillSiegler/claude-plugins) ([docs map](https://github.com/TheRealBillSiegler/claude-plugins/blob/main/docs/README.md)), not in the installed payload: the payload carries what Claude needs to apply the skill, not the apparatus that built it.
+Every claim in this plugin carries one of three provenance tiers — article digest, doc page, or dated live test — defined in the repo's [Anchoring policy](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/REMEDIATION.md#anchoring-policy). The repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) names the doc page behind each mechanic; where the docs are silent, the claim says so. Everything used to *build, verify, and maintain* the plugin — evals, dated article digests, verification dates, drift watching — is in the [plugin repo](https://github.com/TheRealBillSiegler/delegation-tiering) ([docs map](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/README.md)), not in the installed payload: the payload carries what Claude needs to apply the skill, not the apparatus that built it.
 
 ## Design rationale
 

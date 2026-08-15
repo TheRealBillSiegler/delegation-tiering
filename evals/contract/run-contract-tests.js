@@ -3,7 +3,7 @@
 // and assert the decision and message substrings. Pure and offline — verifies
 // the hook's contract as implemented, NOT whether Claude Code still routes
 // Agent/Workflow calls to it (that's the /delegation-tiering:canary command).
-// Run from the repo root: node evals/delegation-tiering/contract/run-contract-tests.js
+// Run from the repo root: node evals/contract/run-contract-tests.js
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');

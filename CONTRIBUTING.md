@@ -1,18 +1,19 @@
 # Contributing
 
 Feature branch → PR into `develop`; releases merge `develop` → `main` by PR — `main` is what the marketplace serves, so nothing reaches an installer until that second merge. No direct pushes to either. Conventional commits.
+
 ## Before you push
 
 Run from the repo root:
 
 ```bash
-node evals/delegation-tiering/contract/run-contract-tests.js                          # hook contract suite
-node plugins/delegation-tiering/hooks/agent-model-gate.js --test   # lint self-check
-node scripts/check-version-bump.js origin/develop HEAD              # fails if plugins/** changed without a version bump
+node evals/contract/run-contract-tests.js                          # hook contract suite
+node hooks/agent-model-gate.js --test                              # lint self-check
+node scripts/check-version-bump.js origin/develop HEAD              # fails if the shipped payload changed without a version bump
 node scripts/check-links.js                                         # links resolve; plugin payloads self-contained
 ```
 
-CI runs the same four. Versioning policy is stated at the top of [CHANGELOG.md](CHANGELOG.md); any change to lint semantics follows the growth rule in [evals/delegation-tiering/contract/README.md](evals/delegation-tiering/contract/README.md#growth-rule) — no fix without its regression case.
+CI runs the same four. Versioning policy is stated at the top of [CHANGELOG.md](CHANGELOG.md); any change to lint semantics follows the growth rule in [evals/contract/README.md](evals/contract/README.md#growth-rule) — no fix without its regression case.
 
 ## Live verification
 
@@ -59,4 +60,4 @@ READMEs and `docs/` prose.
 
 ## Reporting problems
 
-Open a [GitHub issue](https://github.com/TheRealBillSiegler/claude-plugins/issues). For a gate that seems dead (delegations passing with no model named), run `/delegation-tiering:canary` first and include its output — the most likely cause is the missing-runtime fail-open documented in [docs/COVERAGE.md](docs/COVERAGE.md) (dependency A9).
+Open a [GitHub issue](https://github.com/TheRealBillSiegler/delegation-tiering/issues). For a gate that seems dead (delegations passing with no model named), run `/delegation-tiering:canary` first and include its output — the most likely cause is the missing-runtime fail-open documented in [docs/COVERAGE.md](docs/COVERAGE.md) (dependency A9).
