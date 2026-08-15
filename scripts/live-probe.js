@@ -39,7 +39,7 @@ const PROBE =
 // and a prompt on argv shatters at the first space — observed live
 // 2026-08-12, when the session received only the word "Diagnostic".
 const args = ['-p', '--debug', '--model', 'haiku'];
-if (dev) args.unshift('--plugin-dir', path.join(__dirname, '..', 'plugins', 'delegation-tiering'));
+if (dev) args.unshift('--plugin-dir', path.join(__dirname, '..'));
 
 console.log('probing' + (dev ? ' (working-tree plugin via --plugin-dir)' : ' (installed plugins)') + ' — one metered session...');
 const run = spawnSync('claude', args, {

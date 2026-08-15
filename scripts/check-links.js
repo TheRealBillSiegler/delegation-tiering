@@ -5,10 +5,11 @@
 //    #anchor matches a heading in the target under GitHub's slug rules
 //    (lowercase, punctuation stripped, each space becomes one hyphen — an em
 //    dash between spaces therefore yields a double hyphen).
-// 2. Payload containment: a markdown link inside plugins/<name>/ must resolve
-//    WITHIN that plugin or be an absolute URL. The repo tree makes ../sibling
-//    links look fine, but an installer's cache holds one plugin directory, so
-//    anything relative that escapes the plugin is dead exactly where it ships.
+// 2. Payload containment: a markdown link inside a shipped dir (skills/,
+//    hooks/, commands/) must resolve WITHIN the shipped dirs or be an
+//    absolute URL. The repo tree makes ../sibling links to docs/ or evals/
+//    look fine, but an installer's cache holds only the shipped payload, so
+//    anything relative that escapes it is dead exactly where it ships.
 //
 // Prose references (backticked paths, "this plugin's X") are not checked here:
 // a lint precise enough to avoid flagging correctly-qualified repo references
@@ -34,16 +35,14 @@ for (const f of files) {
   );
 }
 
-const pluginRootOf = (f) => {
-  const m = /^plugins[\\/]([^\\/]+)[\\/]/.exec(path.relative('.', f));
-  return m ? path.resolve('plugins', m[1]) : null;
-};
+const SHIPPED_DIRS = ['skills', 'hooks', 'commands'].map((d) => path.resolve(d));
+const inShippedDir = (f) => SHIPPED_DIRS.some((d) => (f + path.sep).startsWith(d + path.sep) || f === d);
 
 let checked = 0;
 const bad = [];
 for (const f of files) {
   const src = fs.readFileSync(f, 'utf8');
-  const plugin = pluginRootOf(f);
+  const shipped = inShippedDir(path.resolve(f));
   for (const m of src.matchAll(/\]\(([^)\s]+)\)/g)) {
     const url = m[1];
     if (/^(https?:|mailto:)/.test(url)) continue;
@@ -57,8 +56,8 @@ for (const f of files) {
     if (anchor && fs.existsSync(target) && fs.statSync(target).isFile() && anchors[target] && !anchors[target].has(anchor)) {
       bad.push(`${f} -> ${url} (missing anchor)`);
     }
-    if (plugin && rel && !(target + path.sep).startsWith(plugin + path.sep) && target !== plugin) {
-      bad.push(`${f} -> ${url} (escapes the plugin: dead in an installed cache — use an absolute URL)`);
+    if (shipped && rel && !inShippedDir(target)) {
+      bad.push(`${f} -> ${url} (escapes the shipped payload: dead in an installed cache — use an absolute URL)`);
     }
   }
 }

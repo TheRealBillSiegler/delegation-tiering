@@ -2,7 +2,7 @@
 # Register with a trigger of your choice, e.g.:
 #   $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"<path-to-this-script>`""
 #   $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 09:17
-#   Register-ScheduledTask -TaskName "claude-plugins-drift-check" -Action $action -Trigger $trigger
+#   Register-ScheduledTask -TaskName "delegation-tiering-drift-check" -Action $action -Trigger $trigger
 #
 # Three checks, in cost order:
 #   1. Drift detection (deterministic, free): doc-page hashes + Claude Code version.
