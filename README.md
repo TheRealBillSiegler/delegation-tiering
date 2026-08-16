@@ -1,6 +1,6 @@
 # delegation-tiering
 
-Explicit model/effort tiering for every delegated agent, enforced. Built from an Anthropic article and the official docs, adapted for supervised delegation. Formerly half of `delegation-steering`; its sibling, the [steering-claude-code](https://github.com/TheRealBillSiegler/steering-claude-code) decision guide, is now its own single-skill plugin.
+Explicit model/effort tiering for every delegated agent, enforced. Built from an Anthropic article and the official docs, adapted for supervised delegation.
 
 ## Install
 
