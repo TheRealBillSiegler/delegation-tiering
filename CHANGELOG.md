@@ -1,10 +1,14 @@
 # Changelog
 
-Versions here are the `version` field in each plugin's `plugin.json`, which Claude Code uses as the update cache key — an installed plugin only updates when that field rises. Repo-level changes that ship to nobody (docs/, evals/, scripts/, the root README, CI) are not versioned and are not listed.
+Versions here are the `version` field in `.claude-plugin/plugin.json`, which Claude Code uses as the update cache key — an installed plugin only updates when that field rises. Repo-level changes that ship to nobody (docs/, evals/, scripts/, the root README, CI) are not versioned and are not listed.
 
-Versioning is [semantic](https://semver.org) with one deliberate exception: **pre-1.0, breaking changes ship as MINOR**, not MAJOR — reserving 1.0.0 for a stability commitment these plugins have not made. Anything breaking is called out in its entry.
+Versioning is [semantic](https://semver.org) with one deliberate exception: **pre-1.0, breaking changes ship as MINOR**, not MAJOR — reserving 1.0.0 for a stability commitment this plugin has not made. Anything breaking is called out in its entry.
 
 ## delegation-tiering
+
+### 0.1.1
+
+- **Fresh installs failed to load on current Claude Code** (verified on 2.1.224): the manifest's `hooks` field pointed at `hooks/hooks.json`, which Claude Code already loads automatically, and the duplicate reference is rejected at hook-load time. The field is removed; hook behavior once loaded is unchanged. Already-installed copies kept working, which is how the defect survived until a clean-machine install.
 
 ### 0.1.0
 
@@ -22,12 +26,6 @@ How the hooks are wired changed; what the gate decides did not. It denies and al
 - **The payload carries only what Claude needs to apply the skill.** The apparatus that builds and verifies it — the dated source digest, doc-anchor table, verification stamps, drift and weekly-summary pointers — lives in the plugin repo, not the installed plugin; shipped pointers at repo files are full URLs. The operational content the skill keeps — what the gate denies, the fail-open paths, the post-update canary instruction — is the execution surface.
 - **The ladder is data.** `hooks/tiers.js` holds the rungs and top-tier preference order and derives the denial string from them — byte-identical to the previous literal, so no user-visible change.
 - **The plugin README states the missing-runtime fail-open right under Components**, in a Verify section, and the canary is namespaced `/delegation-tiering:canary`.
-
-## steering-claude-code
-
-### 0.1.0
-
-First release under this name — the steering-mechanism decision guide split out of `delegation-steering` (retired section below) as a single-skill plugin: the skill alone, no hooks. The skill's content is the restructured `delegation-steering` version; its worked enforcement example now cites the sibling `delegation-tiering` plugin's gate. Matching the sibling, the payload carries only what Claude needs to apply the skill — the Source section keeps the article link and the doc pages behind the mechanics; the dated quote digest and the rest of the build/verify apparatus live in the plugin repo's `docs/research/` and coverage matrix.
 
 ## delegation-steering (retired)
 
