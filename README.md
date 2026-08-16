@@ -7,14 +7,14 @@ Explicit model/effort tiering for every delegated agent, enforced. Built from an
 Via the central marketplace, alongside the other Siegler plugins:
 
 ```text
-/plugin marketplace add TheRealBillSiegler/siegler-plugins
+/plugin marketplace add https://github.com/TheRealBillSiegler/siegler-plugins
 /plugin install delegation-tiering@siegler-plugins
 ```
 
 Or direct from this repo, which self-registers as a one-plugin marketplace:
 
 ```text
-/plugin marketplace add TheRealBillSiegler/delegation-tiering
+/plugin marketplace add https://github.com/TheRealBillSiegler/delegation-tiering
 /plugin install delegation-tiering@delegation-tiering
 ```
 
