@@ -8,7 +8,7 @@ The repo's claim set, procedures, and records — everything that keeps the plug
 | [REMEDIATION.md](REMEDIATION.md) | The drift procedure, its known limits, and the failure classes that shaped it |
 | [ROADMAP.md](ROADMAP.md) | Deferred hardenings, each with the evidence trigger that would justify building it |
 | [drift/](drift/) | One dated report per detected-drift cycle |
-| [research/](research/) | Dated research records with per-claim confidence labels: `claude-models-explained-2026-08-05.md`, `prior-art-and-eval-methodology-2026-08-09.md` |
+| [research/](research/) | Dated research records with per-claim confidence labels: `claude-models-explained-2026-08-05.md`, `prior-art-and-eval-methodology-2026-08-09.md`, `claude-blog-sweep-2026-09-03.md` (findings and live experiments on the advisor tool and the Claude 5 guidance posts), `advisor-and-ladder-proposal-2026-09-03.md` (the reviewed release plan, the live-test results, and the 2026-09-11 claims audit) |
 
 How they connect: `scripts/check-drift.js` detects → a scoping run writes `drift/` → claim changes edit COVERAGE.md and the skills in the same PR. The eval methodology these documents serve lives in [../evals/README.md](../evals/README.md); the machinery is deliberately at repo level, not in the installed plugin, so the shipped payload stays small and the evidence stays reviewable.
 

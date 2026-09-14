@@ -4,22 +4,22 @@ Follow this when `scripts/check-drift.js` exits 1 (doc-page or Claude Code versi
 
 ## Detection
 
-Two weekly automated checks can land you here — `check-drift.js` is deterministic and free; the behavioral probe spends one headless session:
+Two checks, run on demand before a release or after a Claude Code upgrade, can land you here — `check-drift.js` is deterministic and free; the behavioral probe spends one headless session:
 
 ```mermaid
 flowchart LR
-    SRC["anchored sources<br>(cited doc pages + CC version)"] --> CHK["check-drift.js<br>weekly, deterministic, free"]
+    SRC["anchored sources<br>(cited doc pages + CC version)"] --> CHK["check-drift.js<br>on demand, deterministic, free"]
     CHK -- "no drift" --> LOG["one log line, done"]
     CHK -- "drift" --> SCOPE["read-only scoping agent<br>writes DRIFT-REPORT"]
     SCOPE -- "noise" --> UPD["refresh anchors.json via PR"]
     SCOPE -- "claim-affecting" --> REM["this procedure: re-verify<br>empirically, edit, PR — never auto-merge"]
-    PRB["behavioral probe<br>weekly, one headless session"] --> PP["gate alive? PASS/FAIL in drift.log"]
+    PRB["behavioral probe<br>on demand, one headless session"] --> PP["gate alive? PASS/FAIL in drift.log"]
 ```
 
-In text: check-drift.js compares the anchored doc pages and the Claude Code version weekly, logging one line when nothing changed or handing a read-only scoping agent's DRIFT-REPORT to this procedure when something did — routed to an anchors.json refresh if it is noise or to full re-verification if it is claim-affecting — while a separate weekly behavioral probe checks whether the gate is still alive and logs PASS or FAIL to drift.log, as the bullets below describe.
+In text: check-drift.js compares the anchored doc pages on demand and reports the Claude Code version, logging one line when nothing changed or handing a read-only scoping agent's DRIFT-REPORT to this procedure when something did — routed to an anchors.json refresh if it is noise or to full re-verification if it is claim-affecting — while a separate on-demand behavioral probe checks whether the gate is still alive and logs PASS or FAIL to drift.log, as the bullets below describe.
 
 - **check-drift.js**: diffs the anchored doc pages (derived from the pages the shipped skills and COVERAGE.md cite — a description of the rule, not a count that can stale) plus the Claude Code version against `anchors.json`. No drift → one log line. Drift → a read-only scoping agent writes a DRIFT-REPORT, then this procedure branches on whether the drift is noise (refresh `anchors.json` via PR, stop) or claim-affecting (continue below).
-- **Behavioral probe**: one headless session, weekly, runs the gate live and logs PASS/FAIL to `drift.log`. A FAIL is the other trigger for this procedure — it's what a `/delegation-tiering:canary` failure after a Claude Code update looks like when caught automatically instead of by hand.
+- **Behavioral probe**: one headless session, run on demand, runs the gate live and logs PASS/FAIL to `drift.log`. A FAIL is the other trigger for this procedure — it's what a `/delegation-tiering:canary` failure after a Claude Code update looks like when caught automatically instead of by hand.
 
 ## Anchoring policy
 
@@ -27,7 +27,9 @@ Which anchor a claim needs depends on which of three fidelity tiers it belongs t
 
 - **Article-only claims** (advisor figure, start-smart posture): dated quote digests in [docs/research/](research/) — the blogs are the primary source; digests are the ceiling. (Moved out of the skills' `references/`: the payload carries what Claude needs to execute, not the apparatus that verifies it.)
 - **Mechanics**: specific `code.claude.com/docs` pages, listed per claim in [COVERAGE.md](COVERAGE.md)'s dependency table; the steering-claude-code skill also links its doc pages inline as user-facing guidance. Docs win over articles.
-- **Enforcement-boundary behavior** (what actually fires for what): empirical, dated live tests — largely undocumented; where a doc page does state a boundary, [COVERAGE.md](COVERAGE.md)'s dependency table cites it, and the canary and weekly probe re-establish the behavior after Claude Code updates either way.
+- **Enforcement-boundary behavior** (what actually fires for what): empirical, dated live tests — largely undocumented; where a doc page does state a boundary, [COVERAGE.md](COVERAGE.md)'s dependency table cites it, and the canary and the on-demand probe re-establish the behavior after Claude Code updates either way.
+
+Two things no detector watches, so a person reads them at two moments, before a release and after a model launch: the Anthropic posts the skill's rationale rests on (the models-explained, advisor-strategy, and code-migrations posts) and the platform models overview that the ladder's model names and effort levels come from. An experimental doc page that is withdrawn is a drift outcome whose remediation is removing the prose that depended on it, not finding a replacement citation.
 
 ## Procedure
 
