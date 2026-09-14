@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: the text agent() inside a prompt string literal is not a call; the one real call carries a model, so the launch proceeds. Regression for the 2026-09-10 false positive.","tool_name":"Workflow","tool_input":{"script":"const P = `which model a workflow agent() call should use`; await agent(P, { model: 'sonnet' });"}}

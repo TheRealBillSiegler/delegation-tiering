@@ -8,8 +8,11 @@
 // The workflow lint is a string heuristic, not a JS parse: a call whose model
 // arrives via a variable or shared options object false-positives (suppress
 // with a `/* model-gate:allow */` comment inside the call), and a `model:`
-// occurring between two calls can mask a violation. Upgrade path if it
-// misfires in practice: balanced-paren scan of each call's argument list.
+// occurring between two calls can mask a violation. String literals and
+// comments are blanked before the call scan (since 0.1.2), so `agent(` inside
+// a prompt string or a comment is not read as a call; a backtick inside a
+// template placeholder still desyncs the scan. Upgrade path if it misfires in
+// practice: balanced-paren scan of each call's argument list.
 const fs = require('fs');
 const ledger = require('./ledger');
 
@@ -22,12 +25,51 @@ function logDenial(tool, detail) {
 
 const TIERS = require('./tiers').LADDER;
 
+// Same-length blanking of string literals and comments, so an index found in
+// the blanked text addresses the original. Used only to locate calls; the
+// model check and the escape marker are still tested on the original span.
+function blankLiterals(src) {
+  let out = '';
+  let i = 0;
+  const n = src.length;
+  while (i < n) {
+    const c = src[i];
+    const d = src[i + 1];
+    if (c === '/' && d === '/') {
+      let j = src.indexOf('\n', i);
+      if (j < 0) j = n;
+      out += ' '.repeat(j - i);
+      i = j;
+    } else if (c === '/' && d === '*') {
+      let j = src.indexOf('*/', i + 2);
+      j = j < 0 ? n : j + 2;
+      out += ' '.repeat(j - i);
+      i = j;
+    } else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1;
+      while (j < n && src[j] !== c) {
+        if (src[j] === '\\') j++;
+        else if (c !== '`' && src[j] === '\n') break;
+        j++;
+      }
+      j = Math.min(j + 1, n);
+      out += ' '.repeat(j - i);
+      i = j;
+    } else {
+      out += c;
+      i++;
+    }
+  }
+  return out;
+}
+
 function lintScript(src) {
   const missing = [];
   const re = /\bagent\s*\(/g;
   const idx = [];
   let m;
-  while ((m = re.exec(src))) idx.push(m.index);
+  const scan = blankLiterals(src);
+  while ((m = re.exec(scan))) idx.push(m.index);
   idx.forEach((start, i) => {
     const span = src.slice(start, idx[i + 1] ?? src.length);
     if (!/model\s*:/.test(span) && !/model-gate:\s*allow/.test(span)) {
@@ -38,14 +80,23 @@ function lintScript(src) {
 }
 
 // Self-check: `node agent-model-gate.js --test`. Guards the span-boundary logic —
-// a space-styled `agent (` must not desync spans and mask the model-less call.
+// a space-styled `agent (` must not desync spans and mask the model-less call —
+// and the literal blanking: `agent(` in a prompt string or a comment is not a call.
 if (process.argv[2] === '--test') {
-  const got = lintScript("await agent('x'); await agent ('y', { model: 'haiku' });");
-  if (got.length !== 1 || !got[0].includes("agent('x')")) {
-    console.error('lint self-test FAILED: ' + JSON.stringify(got));
-    process.exit(1);
+  const checks = [
+    { src: "await agent('x'); await agent ('y', { model: 'haiku' });", want: 1, name: 'space-styled call still linted' },
+    { src: "const P = 'which model an agent() call should use'; await agent(P, { model: 'sonnet' });", want: 0, name: 'agent( inside a string is not a call' },
+    { src: "// every agent( needs a model\nawait agent('x', { model: 'sonnet' });", want: 0, name: 'agent( inside a comment is not a call' },
+    { src: "await agent(`multi\nline agent() prompt`, { model: 'sonnet' }); await agent('z');", want: 1, name: 'template literal blanked, later model-less call still caught' },
+  ];
+  for (const c of checks) {
+    const got = lintScript(c.src);
+    if (got.length !== c.want) {
+      console.error('lint self-test FAILED (' + c.name + '): ' + JSON.stringify(got));
+      process.exit(1);
+    }
   }
-  console.log('lint self-test OK');
+  console.log('lint self-test OK (' + checks.length + ' cases)');
   process.exit(0);
 }
 

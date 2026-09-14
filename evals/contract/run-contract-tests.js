@@ -20,6 +20,8 @@ const CASES = [
   { fixture: 'wf-masking.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('do x')"] } },
   { fixture: 'wf-clean.json', expect: { decision: 'allow', contains: ['lints clean'], absent: [TIERS] } },
   { fixture: 'wf-predefined.json', expect: { decision: 'allow', contains: ['cannot be linted'] } },
+  { fixture: 'wf-string-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-comment-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
 ];
 
 // Gate cases share a temp ledger so denial-logging is assertable.
