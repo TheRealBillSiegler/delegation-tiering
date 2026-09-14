@@ -7,7 +7,7 @@ description: Use when spawning or configuring any delegated agent — an Agent t
 
 Standing rule: every delegated agent gets an **explicit model** at the **lowest tier sufficient** for its task. State the tiering rationale when presenting a plan that spawns agents.
 
-Scope: supervised delegation only — this ladder is bottom-up because the orchestrator, already the most capable model in the session, stays in the loop: writing the spec, choosing the tier, reviewing the output. For a standalone workload with no orchestrator, work top-down instead: start with the most capable model and dial effort.
+Scope: supervised delegation only — this ladder is bottom-up because the orchestrator, already the most capable model in the session, stays in the loop: writing the spec, choosing the tier, reviewing the output. For a standalone workload with no orchestrator, work top-down instead: start with the most capable model and dial effort. When the session's main model is a cheaper one with an advisor attached, the advisor is that executor's own escalation path, not a rung on this ladder: delegated gates still go to the most capable model available.
 
 ## The ladder
 
@@ -15,20 +15,20 @@ Stop at the first tier that is sufficient:
 
 | Tier | Effort | Use for |
 | ------ | -------- | --------- |
-| fastest/cheapest (`haiku`) | low–medium | Mechanical work: repo/file scouting, verbatim extraction, inventories, reflows, format conversion |
+| fastest/cheapest (`haiku`) | none (Haiku 4.5 takes no effort setting) | Mechanical work: repo/file scouting, verbatim extraction, inventories, reflows, format conversion |
 | balanced (`sonnet`) | medium | Pattern-following implementation with verified anchors, doc research, toolchain iteration, fidelity checks |
 | balanced (`sonnet`) | high | Implementation from near-code design; complex but well-specified multi-file edits |
 | reasoning (`opus`) | high | Reasoning-intensive work where the balanced tier demonstrably falls short AND the task is not a top-tier category |
-| top tier (most capable in session: `fable` — the Claude 5 flagship above `opus` — else `opus`, else `sonnet`) | high–xhigh | Top-tier categories ONLY: adversarial review gates, open-ended design, security-boundary reads |
+| top tier (most capable in session: `fable` — above `opus` in the Claude 5 lineup — else `opus`, else `sonnet`) | high–xhigh | Top-tier categories ONLY: adversarial review gates, open-ended design, security-boundary reads |
 
 Durable rules about the table:
 
-- **Bands are sweet spots, not fences.** Below-band is fine for easy instances. Wanting effort *above* a tier's band is the tell that the task has left the tier: a `haiku` file-inventory whose prompt keeps growing judgment calls — "skip vendored code", "decide whether each TODO is stale" — until you're reaching for `effort: high` isn't a hard inventory anymore; the judgment is the work, so it's `sonnet` at medium, not `haiku` at high.
+- **Bands are sweet spots, not fences.** Below-band is fine for easy instances. Wanting effort *above* a tier's band is the tell that the task has left the tier: a `haiku` file-inventory whose prompt keeps growing judgment calls — "skip vendored code", "decide whether each TODO is stale" — until the prompt is mostly judgment isn't a hard inventory anymore; the judgment is the work, so it's `sonnet` at medium. (Haiku 4.5 has no effort setting to raise: the platform models overview lists effort as not supported for it.)
 - **"Top tier" means the most capable model available in the session** — not last generation's flagship by habit, and not a fixed name. In a fable session, top tier is fable; in fable-less sessions (opus- or sonnet-topped plans, fast mode), the most capable available model takes the top-tier categories. When the ladder compresses — e.g. a sonnet-topped session where sonnet is both worker and gate — the gate stage still earns its place through independence (fresh context, adversarial framing), not extra capability. When the model lineup changes, remap tiers by position (fastest/cheapest ↔ most capable), not by name — the names in parentheses reflect the Claude 5 generation.
 - **When fable is available, top-tier categories stay on fable.** Larger models carry more wisdom, creativity, and writing skill than similar benchmark scores suggest — exactly the margin adversarial gates and open-ended design pay for. Opus substitutes as top tier; it does not co-equal fable when fable is present.
 - **Both directions fail the rule.** Over-provisioning (top tier for scouting) and under-provisioning (balanced tier for the final adversarial review of production config) are equally wrong.
 - **Effort is per-call only on some surfaces.** Workflow `agent()` calls accept `effort` per call; direct Agent tool calls have no effort parameter and inherit the session's effort level — though a custom agent type can pin `effort` in its definition frontmatter. If the session runs below a tier's band for a top-tier category, route through a workflow or a definition-pinned agent type, or accept the session effort — model class is the bigger lever: a higher-class model at low effort often beats a smaller model at high.
-- **Orchestration modes don't change the ladder.** Exhaustive-verification modes (e.g. ultracode) scale how many agents you spawn and how many verify stages you add — not the tier each agent gets. Fan-out multiplication makes over-provisioning costlier, not more acceptable; the advisor pattern below is what heavy orchestration should look like.
+- **Orchestration modes don't change the ladder.** Exhaustive-verification modes (e.g. ultracode) scale how many agents you spawn and how many verify stages you add — not the tier each agent gets. Fan-out multiplication makes over-provisioning costlier, not more acceptable; the cheap-finders-plus-gate shape below is what heavy orchestration should look like.
 
 ## Selection questions
 
@@ -56,9 +56,9 @@ The tier follows how enumerated the target is — the less anyone has named what
 
 The gate earns top tier once per claim, not once per retry: a follow-up named "re-gate" that checks enumerated fixes against expected evidence is the second row, not the last. And every fix that lands with the deterministic check that would have caught it moves its future re-verification to the first row.
 
-## Advisor pattern
+## Cheap finders, top-tier gate
 
-For fan-outs, prefer cheap workers plus a top-tier gate over top tier everywhere: fastest/balanced-tier finders → top-tier adversarial verify. The economics hold on at least one real benchmark: on SWE-bench Pro, Sonnet 5 with a Fable 5 advisor is within 10% of Fable 5's score at 63% of the price of using Fable 5 for the whole task — a single-benchmark figure, not a general result.
+For fan-outs, prefer cheap workers plus a top-tier gate over top tier everywhere: fastest/balanced-tier finders → top-tier adversarial verify. A naming note, because Anthropic uses "advisor" for the reverse shape: its advisor tool and advisor strategy are a cheaper executor consulting a stronger model mid-task, while its code-migrations post calls a top model directing cheaper executors "an advisory pattern". This section is the second shape. Benchmark figures for the advisor tool measure the first and do not carry over.
 
 ## Evaluation
 
@@ -74,7 +74,7 @@ What backs the standing rule:
 - **Workflow tool (deterministic, heuristic):** the same hook lints the script text at launch and denies on `agent()` calls with no `model:` in their argument span, quoting the offending snippets.
   - String scan, not a JS parse: it can false-positive on a call whose model arrives via a variable or shared options object, and stray `model:` text between calls can mask a violation. The denial message carries the fix, escape marker included; mechanics are in the plugin's `hooks/README.md`.
   - Fail-open paths: named/predefined workflows (no script text to lint) are allowed with only a reminder, and an unreadable `scriptPath` is allowed silently — both fall back to the always-loaded rule alone.
-  - Per-spawn events inside a running workflow are not hookable, so launch-time linting is the only deterministic contact point for this path.
+  - Per-spawn events inside a running workflow cannot be gated: PreToolUse never fires for them, and the subagent start and stop events that do fire cannot deny, so launch-time linting is the only deterministic contact point for this path.
 - **Always-loaded rule (probabilistic):** the standing rule also lives in `~/.claude/rules/delegation.md` (installed by the `/delegation-tiering:canary` command if missing), so it holds even when this skill is never invoked and survives compaction.
 
 Alongside the layers, observability: this plugin's PostToolUse hook (`hooks/delegation-ledger.js`) records every delegation to the plugin's data directory — the gate makes models explicit; the ledger makes tier choices reviewable.
@@ -85,5 +85,5 @@ Maintenance: `Agent` and `Workflow` are documented tool names, but a rename woul
 
 ## Source
 
-- Rationale beyond this skill: [Claude models explained: choosing the best model for your use case](https://claude.com/blog/claude-models-explained-choosing-the-best-model-for-your-use-case) — the post behind the selection framework and the advisor figure.
+- Rationale beyond this skill: [Claude models explained: choosing the best model for your use case](https://claude.com/blog/claude-models-explained-choosing-the-best-model-for-your-use-case) — the post behind the selection framework.
 - Model facts (IDs, tiers, pricing, effort vocabulary): the maintained anchors are the [platform models overview](https://platform.claude.com/docs/en/about-claude/models/overview) and the local `claude-api` skill — not this skill.
