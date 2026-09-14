@@ -6,6 +6,17 @@ Versioning is [semantic](https://semver.org) with one deliberate exception: **pr
 
 ## delegation-tiering
 
+### 0.1.2
+
+Corrections to shipped prose and one lint defect; no enforcement or ladder semantics change.
+
+- **The skill used Anthropic's word "advisor" for the opposite shape.** Its "Advisor pattern" section described cheap finders feeding a top-tier gate and cited a SWE-bench Pro figure that measures the advisor tool, where a cheaper executor consults a stronger model mid-task. The section is renamed "Cheap finders, top-tier gate", carries a one-sentence naming note, and drops the figure. The scope line now says what an attached advisor is on this ladder: the executor's escalation path, not a rung. The README's design rationale is restated on Claude Code's own comparison table (the plugin is the "Subagents with model set" row).
+- **The haiku row claimed an effort band Haiku 4.5 does not have.** The platform models overview lists effort as not supported for Haiku 4.5; the row and the first durable rule say so. "Flagship" is dropped from the fable cell; the page does not use it.
+- **Workflow-internal spawns were called "not hookable".** SubagentStop fires for them (live, 2026-09-03); what holds is that no hook can gate them. The Enforcement section says "cannot be gated".
+- **Workflow lint: `agent(` inside a prompt string or a comment was read as a call** and denied a legitimate launch twice on 2026-09-10. String literals and comments are blanked before the call scan; the model check and the escape marker still apply to the original text. Two regression fixtures and three self-test cases added. Lint semantics for real calls are unchanged.
+
+Repo-side in the same change, unversioned: the coverage table gains six dated dependency rows from the 2026-09-03 live tests and a Protects column; row A3 becomes docs-silent (hooks.md no longer shows the Agent input schema); row A9 records the 2026-09-14 headless re-test; the drift check strips links before hashing and reports the Claude Code version without treating it as drift; the drift task is documented as run on demand; the 2026-09-03 research records and the 2026-09-14 drift report are added.
+
 ### 0.1.1
 
 - **Fresh installs failed to load on current Claude Code** (verified on 2.1.224): the manifest's `hooks` field pointed at `hooks/hooks.json`, which Claude Code already loads automatically, and the duplicate reference is rejected at hook-load time. The field is removed; hook behavior once loaded is unchanged. Already-installed copies kept working, which is how the defect survived until a clean-machine install.
