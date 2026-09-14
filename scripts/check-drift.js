@@ -77,35 +77,22 @@ function normalize(body) {
     .trim();
 }
 
-// Best-effort snapshot of a page in the Wayback Machine at update time, so a
-// later drift can be diffed against what the page said without the repo
-// storing page copies. Never fails the update: null means no snapshot.
-async function archive(url) {
-  try {
-    const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 45000);
-    const res = await fetch('https://web.archive.org/save/' + url, { redirect: 'follow', signal: ctl.signal });
-    clearTimeout(t);
-    return /\/web\/\d+/.test(res.url) ? res.url : null;
-  } catch {
-    return null;
-  }
-}
-
-async function currentState(withArchive) {
-  const state = { capturedAt: new Date().toISOString(), claudeVersion: claudeVersion(), normalization: NORMALIZATION, pages: {}, archives: {} };
+// No stored page copies and no archive snapshots: the Wayback Machine's save
+// endpoint refuses anonymous scripted saves (tried 2026-09-14), so scoping a
+// drift still means re-fetching the page, as docs/drift records.
+async function currentState() {
+  const state = { capturedAt: new Date().toISOString(), claudeVersion: claudeVersion(), normalization: NORMALIZATION, pages: {} };
   for (const url of URLS) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
     const body = await res.text();
     state.pages[url] = crypto.createHash('sha256').update(normalize(body)).digest('hex');
-    if (withArchive) state.archives[url] = await archive(url);
   }
   return state;
 }
 
 (async () => {
-  const state = await currentState(process.argv[2] === '--update');
+  const state = await currentState();
   if (process.argv[2] === '--update') {
     fs.writeFileSync(ANCHORS, JSON.stringify(state, null, 2) + '\n');
     console.log('anchors.json updated at ' + state.capturedAt);
