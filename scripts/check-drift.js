@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // Deterministic drift detection for the claims this plugin anchors to living
-// sources: the Claude Code doc pages it cites, plus the installed Claude Code
-// version. Compares SHA-256 of each page body against scripts/anchors.json.
+// sources: the Claude Code doc pages it cites. Compares SHA-256 of each page
+// body, with link targets and bare URLs stripped first, against
+// scripts/anchors.json. Link stripping (since 0.1.2) keeps site-wide link
+// rewrites, which changed every page on 2026-08-09 and touched no claim, from
+// counting as drift. The installed Claude Code version is recorded and
+// reported but is not a drift trigger: releases land most days.
 //
 // The watched set is derived from the pages the shipped skills and the
 // coverage matrix actually cite, not maintained as a list here. Citing a new
@@ -61,19 +65,47 @@ function claudeVersion() {
   }
 }
 
-async function currentState() {
-  const state = { capturedAt: new Date().toISOString(), claudeVersion: claudeVersion(), pages: {} };
+const NORMALIZATION = 'links-stripped-v1';
+
+// Markdown link targets and bare URLs go; whitespace collapses. What remains
+// is the prose and code a claim can rest on.
+function normalize(body) {
+  return body
+    .replace(/\]\([^)]*\)/g, ']()')
+    .replace(/https?:\/\/[^\s)>"']+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Best-effort snapshot of a page in the Wayback Machine at update time, so a
+// later drift can be diffed against what the page said without the repo
+// storing page copies. Never fails the update: null means no snapshot.
+async function archive(url) {
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 45000);
+    const res = await fetch('https://web.archive.org/save/' + url, { redirect: 'follow', signal: ctl.signal });
+    clearTimeout(t);
+    return /\/web\/\d+/.test(res.url) ? res.url : null;
+  } catch {
+    return null;
+  }
+}
+
+async function currentState(withArchive) {
+  const state = { capturedAt: new Date().toISOString(), claudeVersion: claudeVersion(), normalization: NORMALIZATION, pages: {}, archives: {} };
   for (const url of URLS) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
     const body = await res.text();
-    state.pages[url] = crypto.createHash('sha256').update(body).digest('hex');
+    state.pages[url] = crypto.createHash('sha256').update(normalize(body)).digest('hex');
+    if (withArchive) state.archives[url] = await archive(url);
   }
   return state;
 }
 
 (async () => {
-  const state = await currentState();
+  const state = await currentState(process.argv[2] === '--update');
   if (process.argv[2] === '--update') {
     fs.writeFileSync(ANCHORS, JSON.stringify(state, null, 2) + '\n');
     console.log('anchors.json updated at ' + state.capturedAt);
@@ -86,7 +118,10 @@ async function currentState() {
   const baseline = JSON.parse(fs.readFileSync(ANCHORS, 'utf8'));
   const drift = [];
   if (state.claudeVersion !== baseline.claudeVersion) {
-    drift.push(`claude version: ${baseline.claudeVersion} -> ${state.claudeVersion}`);
+    console.log(`claude version: ${baseline.claudeVersion} -> ${state.claudeVersion} (reported, not drift)`);
+  }
+  if (baseline.normalization !== NORMALIZATION) {
+    drift.push(`hash normalization changed (${baseline.normalization || 'none'} -> ${NORMALIZATION}); page hashes are not comparable until --update runs after scoping`);
   }
   for (const url of URLS) {
     if (!baseline.pages[url]) drift.push(`new anchored page (no baseline): ${url}`);
