@@ -43,8 +43,9 @@ function anchoredUrls() {
     for (const file of markdownFiles(source)) {
       const text = fs.readFileSync(file, 'utf8');
       // Normalize: a page is cited with or without the .md suffix, and may
-      // carry a #fragment. All forms name the same page body.
-      for (const m of text.matchAll(/code\.claude\.com\/docs\/en\/([a-z0-9-]+)/g)) {
+      // carry a #fragment. All forms name the same page body. A page can sit
+      // below a section (plugins/cli-reference), so the path keeps its slashes.
+      for (const m of text.matchAll(/code\.claude\.com\/docs\/en\/([a-z0-9-]+(?:\/[a-z0-9-]+)*)/g)) {
         pages.add(`https://code.claude.com/docs/en/${m[1]}.md`);
       }
     }
