@@ -48,7 +48,7 @@ It installs the always-loaded rule file and proves both deny paths live. Run it 
 ## Configuration
 
 - **Ledger location** — `${CLAUDE_PLUGIN_DATA}/delegation-ledger.jsonl`, the [per-plugin data directory](https://code.claude.com/docs/en/plugins-reference) Claude Code provisions and exports to hook processes. Set `DELEGATION_LEDGER` to redirect it elsewhere.
-- **Off switch:** `/plugin disable delegation-tiering` turns the plugin off ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). Uninstalling removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
+- **Off switch:** `/plugin disable delegation-tiering` turns the plugin off ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). Uninstalling from the plugin's last scope removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
 
 ## Three-layer enforcement
 
@@ -67,14 +67,14 @@ flowchart TD
     G -- "no model / lint fails" --> DENY["denied, with the fix"]
     G -- "explicit models" --> RUN["runs, reminder injected"]
     RUN --> LED["ledger line appended"]
-    IN["agent() inside a workflow"] -. "not hookable" .-> RUN
+    IN["agent() inside a workflow"] -. "cannot be gated" .-> RUN
 ```
 
 In text: Agent calls and Workflow launches hit the PreToolUse gate, which denies them when no model is named or the lint fails, and otherwise lets them run with a tiering reminder and a ledger line; agent() spawns inside an already-running workflow reach neither the gate nor the ledger.
 
 ## Sunset criterion
 
-This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665, #44976, #67898), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
+This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665; #44976 and #67898 closed without shipping it), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
 
 ## Source fidelity
 
