@@ -6,6 +6,20 @@ Versioning is [semantic](https://semver.org) with one deliberate exception: **pr
 
 ## delegation-tiering
 
+### 0.1.3
+
+The tier ladder for the Claude 5.5 lineup, a shorter skill, and two gate defects. **Ladder semantics change:** the open adversarial gate, open-ended design, and security-boundary reads move from fable to opus.
+
+- **The top of the ladder sent three roles to fable that no measurement separates from opus.** Opus 5.5 "performs at the level of Claude Fable 5.1 on most work", its per-token price is 40% of Fable 5.1's ($4/$20 against $10/$50 per MTok), and Anthropic's choosing-a-model page starts most workloads on Opus 5.5 and moves to Fable when evals at `xhigh` or `max` fall short. Opus now takes the open adversarial gate (once per claim), open-ended design, and security-boundary reads at high to `xhigh`; fable takes work an opus attempt at `xhigh` fell short on, and one re-run of a gate verdict the orchestrator rejects before any fix lands. The opus band reaches `xhigh`, a model the session cannot delegate to hands its tier to the next one up, and `hooks/tiers.js` and the gate's denial text follow.
+- **The skill said the Agent tool takes no per-call effort.** It has since Claude Code 2.1.292. The skill now asks Claude to pass `effort` inside the tier's band on every Agent call whose schema lists the parameter, and says an omitted effort runs at the session's level, not the model's default.
+- **The haiku row said Haiku takes no effort.** Haiku 5.5 takes all five levels. The row reads medium, and a `haiku` call that still resolves to Haiku 4.5 runs with effort passed.
+- **The gate blocked calls that cannot name a model.** A fork runs on the session's model and ignores `model`, and under `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` the Agent tool has no `model` parameter, so the gate denied every Agent call in such a session. Both now pass with a note. The fork note says forking chooses the session's tier and when a non-fork subagent fits better; the forced-model allow counts every value Claude Code reads as on (`1`, `true`, `yes`, `on`, any casing), and the canary counts its note as a pass. Every other model-less Agent call is still denied.
+- **Forking chooses a tier.** A fork runs on the session's model, and fork mode is on by default in interactive sessions; the skill forks only when that model is the lowest sufficient tier or the shared context is the point.
+- **The skill is shorter** (1,661 to 1,379 words). Hook mechanics, version floors, and rationale citations live in the repo, each rule appears once, and the Enforcement section states what Claude acts on. One staleness stamp points at the coverage matrix.
+- **Two traps from current Claude Code are named:** the bundled workflow-authoring reference tells script authors to omit `model`, which this skill overrides, and a `model` in `meta.phases` is a display label.
+
+Repo-side in the same change, unversioned: the 2026-10-08 drift report; coverage rows citing the pages that now document nine rows' mechanics, and new rows for forks, the forced-model setting, and the cybersecurity fallback that re-runs a flagged subagent on Opus 4.8; the drift check watches nested doc pages, which its pattern previously misread; the lineup research record, with the evidence behind the ruling and a correction to the 2026-08-09 prior-art claims; a 20-row answer key; README fact fixes; the live probe strips the forced-model setting so its deny assertions hold.
+
 ### 0.1.2
 
 Corrections to shipped prose and one lint defect; no enforcement or ladder semantics change.
