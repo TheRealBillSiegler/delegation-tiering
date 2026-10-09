@@ -2,7 +2,9 @@
 // PreToolUse gate enforcing the explicit-model rule from the delegation-tiering
 // skill (shipped in this plugin) on both delegation paths:
 //  - Agent tool: no explicit `model` -> deny with re-issue instructions;
-//    explicit model -> inject a one-line tiering reminder.
+//    explicit model -> inject a one-line tiering reminder. A fork, and any
+//    call while CLAUDE_CODE_SUBAGENT_MODEL_FORCE is on, cannot take a model
+//    and is allowed with a note.
 //  - Workflow tool: lint the script text for agent() calls with no `model:`
 //    in their argument span -> deny listing the offending calls.
 // The workflow lint is a string heuristic, not a JS parse: a call whose model
@@ -24,6 +26,12 @@ function logDenial(tool, detail) {
 }
 
 const TIERS = require('./tiers').LADDER;
+
+// CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 makes Claude Code run every subagent on
+// one model and removes the Agent tool's `model` parameter.
+function subagentModelForced() {
+  return ['1', 'true'].includes(String(process.env.CLAUDE_CODE_SUBAGENT_MODEL_FORCE || '').trim().toLowerCase());
+}
 
 // Same-length blanking of string literals and comments, so an index found in
 // the blanked text addresses the original. Used only to locate calls; the
@@ -151,8 +159,22 @@ process.stdin.on('end', () => {
   // hard block on a working tool, caused by an edit in a different file.
   if (input.tool_name !== 'Agent') return;
 
+  // A fork runs on the parent session's model and ignores `model` (Agent tool
+  // schema; sub-agents.md), so there is no tier to choose. Demanding one would
+  // make Claude restate a value that never takes effect, and the ledger would
+  // record it as a choice.
+  if (ti.subagent_type === 'fork') {
+    allow('delegation-tiering: a fork runs on the session model, so it has no tier to choose.');
+    return;
+  }
+
   if (ti.model) {
     allow('delegation-tiering: chosen tier ' + ti.model + ' — confirm it is the lowest sufficient for this task; consult the delegation-tiering skill if unsure.');
+  } else if (subagentModelForced()) {
+    // Under CLAUDE_CODE_SUBAGENT_MODEL_FORCE the Agent tool has no `model`
+    // parameter (observed live 2026-10-08), so a denial could never be
+    // satisfied: the user has chosen one model for every subagent.
+    allow('delegation-tiering: CLAUDE_CODE_SUBAGENT_MODEL_FORCE is on, so every subagent runs on the forced model and an Agent call cannot name one; the explicit-model check is off for Agent calls while it is set.');
   } else {
     logDenial('Agent', 'no model');
     deny('Agent call has no explicit model. Apply the delegation-tiering skill: choose the lowest sufficient tier (' + TIERS + ') and re-issue this exact Agent call with the model parameter set. If the agent type’s definition already pins a suitable model, restate that model; if inheriting the session model is genuinely the lowest sufficient choice, state that model explicitly.');

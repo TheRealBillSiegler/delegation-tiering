@@ -9,6 +9,7 @@ flowchart TD
     CALL["Agent or Workflow tool call"] --> GATE["agent-model-gate.js (PreToolUse)"]
     GATE -- "Agent, no model" --> DENY["deny + tier ladder + re-issue instructions"]
     GATE -- "Agent, explicit model" --> ALLOW["allow + one-line tier reminder"]
+    GATE -- "Agent fork, or FORCE on" --> NOTE["allow + note: no model to choose"]
     GATE -- "Workflow, script/scriptPath" --> LINT{"lint script text"}
     LINT -- "model-less agent() found" --> DENY
     LINT -- "clean" --> ALLOW2["allow + clean-lint note"]
@@ -17,11 +18,11 @@ flowchart TD
     ALLOW & ALLOW2 --> RUN["tool runs"] --> LED["delegation-ledger.js (PostToolUse)<br>one JSONL line per delegation"]
 ```
 
-In text: a call reaches the gate, which denies an Agent call missing a model, allows one with an explicit model, lints Workflow script text and denies or allows depending on whether every agent() call names a model, fails open with a reminder when there is no script text to lint, and logs every denial or completed run to the ledger — the same branches the list below spells out.
+In text: a call reaches the gate, which denies an Agent call missing a model, allows one with an explicit model, allows a fork or any Agent call made while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on with a note, lints Workflow script text and denies or allows depending on whether every agent() call names a model, fails open with a reminder when there is no script text to lint, and logs every denial or completed run to the ledger — the same branches the list below spells out.
 
 ## `agent-model-gate.js`
 
-- **Agent branch:** denies any call whose `tool_input` lacks `model`; the denial carries the tier ladder so the orchestrator can re-issue with an explicit choice. Allow responses inject only a one-line reminder.
+- **Agent branch:** denies any call whose `tool_input` lacks `model`; the denial carries the tier ladder so the orchestrator can re-issue with an explicit choice. Allow responses inject only a one-line reminder. Two calls cannot name a model and are allowed with a note: a fork (`subagent_type: "fork"`), which runs on the session model and ignores `model`, and any Agent call while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on, which removes the Agent tool's `model` parameter. Under that variable the Workflow lint still asks for a `model` on each `agent()` call, though the forced model runs either way.
 - **Workflow branch:** lints the launch-time script text (`tool_input.script`, or the file at `tool_input.scriptPath` when readable) for `agent()` calls without a `model` option, and denies the launch quoting the offending call — the only deterministic contact point for workflow-internal spawns, which no hook event reaches individually. The lint is a string heuristic: `/* model-gate:allow */` suppresses only the call whose span it sits in — the span runs from that `agent(` to the next one, so a marker in a file header suppresses nothing. Predefined workflow names fail open with a reminder; an unreadable `scriptPath` fails open silently.
 - **Failure posture:** unparseable stdin fails open (a broken hook must not block all delegation); every deny appends a `{ts, tool, denied: true, detail}` line to the ledger so gate value is countable.
 - **`--test`:** embedded self-check for the span-boundary regression — run `node agent-model-gate.js --test` to verify the lint on your install. The fuller contract suite lives in the plugin repo: [evals/contract/](https://github.com/TheRealBillSiegler/delegation-tiering/tree/main/evals/contract).

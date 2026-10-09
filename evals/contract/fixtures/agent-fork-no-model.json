@@ -1,0 +1,1 @@
+{"_purpose":"Gate fork branch: a fork runs on the parent session's model and ignores the model parameter (Agent tool schema; sub-agents.md), so a model-less fork call is allowed with a note. Payload shape as observed live on 2026-10-08 (Claude Code 2.1.295).","tool_name":"Agent","tool_input":{"description":"probe fork","prompt":"x","subagent_type":"fork"}}
