@@ -6,6 +6,14 @@ Versioning is [semantic](https://semver.org) with one deliberate exception: **pr
 
 ## delegation-tiering
 
+### 0.1.4
+
+One lint defect. The Workflow lint now judges each `agent()` call on its own argument list; no ladder or Agent-tool semantics change.
+
+- **Workflow lint: a model-less call could pass on a `model:` that was not its own.** The model check and the escape marker ran over the text from each `agent(` to the next one. A `model:` in later code (a lens or batch table, a result-mapping object) or in the call's own prompt string hid the call. A mutation test over 559 real calls caught 553; all six misses were these two causes. Each call is now checked in its own balanced argument list, read with string literals and comments blanked; a quoted `'model':` or `"model":` key counts. **Behavior changes:** a `/* model-gate:allow */` marker now suppresses a flag only inside the call's own argument list, so a marker after the closing paren no longer does; and a call whose model arrives through a variable, a spread, or a shared options object stays flagged unless it carries the marker, as documented. A script with an unbalanced call (truncated or invalid) falls back to the old span-to-next-call check.
+
+Repo-side in the same change, unversioned: six contract fixtures and ten `--test` cases; a failure-class row in `docs/REMEDIATION.md`.
+
 ### 0.1.3
 
 The tier ladder for the Claude 5.5 lineup, a shorter skill, and two gate defects. **Ladder semantics change:** the open adversarial gate, open-ended design, and security-boundary reads move from fable to opus.

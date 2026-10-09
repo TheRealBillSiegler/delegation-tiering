@@ -5,16 +5,18 @@
 //    explicit model -> inject a one-line tiering reminder. A fork, and any
 //    call while CLAUDE_CODE_SUBAGENT_MODEL_FORCE is on, cannot take a model
 //    and is allowed with a note.
-//  - Workflow tool: lint the script text for agent() calls with no `model:`
-//    in their argument span -> deny listing the offending calls.
-// The workflow lint is a string heuristic, not a JS parse: a call whose model
-// arrives via a variable or shared options object false-positives (suppress
-// with a `/* model-gate:allow */` comment inside the call), and a `model:`
-// occurring between two calls can mask a violation. String literals and
-// comments are blanked before the call scan (since 0.1.2), so `agent(` inside
-// a prompt string or a comment is not read as a call; a backtick inside a
-// template placeholder still desyncs the scan. Upgrade path if it misfires in
-// practice: balanced-paren scan of each call's argument list.
+//  - Workflow tool: lint the script text for agent() calls with no `model` key
+//    in their own argument list -> deny listing the offending calls.
+// The workflow lint is a string heuristic, not a JS parse. String literals and
+// comments are blanked before the scan (since 0.1.2), so `agent(` or `model:`
+// inside a prompt string or a comment is not read as code; a backtick inside a
+// template placeholder still desyncs the scan. Each call is judged on its own
+// balanced argument list (since 0.1.4), so a `model:` in later code or in the
+// call's prompt cannot mask it. A call whose model arrives via a variable, a
+// spread, or a shared options object has no `model` key and is flagged:
+// suppress it with a `/* model-gate:allow */` comment inside that call's
+// argument list. A call with no closing paren (a truncated script) falls back
+// to the older check over the text up to the next call.
 const fs = require('fs');
 const ledger = require('./ledger');
 
@@ -35,8 +37,11 @@ function subagentModelForced() {
 }
 
 // Same-length blanking of string literals and comments, so an index found in
-// the blanked text addresses the original. Used only to locate calls; the
-// model check and the escape marker are still tested on the original span.
+// the blanked text addresses the original. One literal survives blanking: a
+// quoted key that is exactly `model` and followed by a colon (`'model':`) is
+// kept as ` model `, so the lint can read it in the blanked text like an
+// unquoted key. The tokenizer here already knows which quotes open a literal,
+// so a `'model':` inside a prompt string or a comment is still blanked.
 function blankLiterals(src) {
   let out = '';
   let i = 0;
@@ -62,7 +67,10 @@ function blankLiterals(src) {
         j++;
       }
       j = Math.min(j + 1, n);
-      out += ' '.repeat(j - i);
+      const keyAfter = /\s*:/y;
+      keyAfter.lastIndex = j;
+      const isModelKey = c !== '`' && src.slice(i + 1, j - 1) === 'model' && src[j - 1] === c && keyAfter.test(src);
+      out += isModelKey ? ' model ' : ' '.repeat(j - i);
       i = j;
     } else {
       out += c;
@@ -72,17 +80,32 @@ function blankLiterals(src) {
   return out;
 }
 
+// A call passes on a `model` object key in its own balanced argument list,
+// read in the blanked text (a key is `{` or `,` then `model` then `:`), or on
+// the escape marker anywhere in that list in the original text. Parens are
+// counted in the blanked text only, so a paren in a string or comment cannot
+// end the list early. An unbalanced list falls back to the span up to the next
+// call, tested on the original text.
 function lintScript(src) {
   const missing = [];
   const re = /\bagent\s*\(/g;
-  const idx = [];
+  const calls = [];
   let m;
   const scan = blankLiterals(src);
-  while ((m = re.exec(scan))) idx.push(m.index);
-  idx.forEach((start, i) => {
-    const span = src.slice(start, idx[i + 1] ?? src.length);
-    if (!/model\s*:/.test(span) && !/model-gate:\s*allow/.test(span)) {
-      missing.push(span.slice(0, 90).replace(/\s+/g, ' ').trim());
+  while ((m = re.exec(scan))) calls.push({ start: m.index, open: m.index + m[0].length - 1 });
+  calls.forEach((call, i) => {
+    const next = calls[i + 1] ? calls[i + 1].start : src.length;
+    let depth = 0;
+    let close = call.open;
+    for (; close < scan.length; close++) {
+      if (scan[close] === '(') depth++;
+      else if (scan[close] === ')' && --depth === 0) break;
+    }
+    const balanced = close < scan.length;
+    const own = src.slice(call.start, balanced ? close + 1 : next);
+    const hasModel = balanced ? /[{,]\s*model\s*:/.test(scan.slice(call.start, close + 1)) : /model\s*:/.test(own);
+    if (!hasModel && !/model-gate:\s*allow/.test(own)) {
+      missing.push(src.slice(call.start, next).slice(0, 90).replace(/\s+/g, ' ').trim());
     }
   });
   return missing;
