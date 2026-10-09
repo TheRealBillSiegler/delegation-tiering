@@ -35,7 +35,7 @@ The four evaluation layers chain from proving the hooks' contract as implemented
 **Based on:**
 
 - [steering-claude-code/evals/scenarios.md](https://github.com/TheRealBillSiegler/steering-claude-code/blob/main/evals/scenarios.md) — lives in that plugin's own repo; six scenarios converted from the source article's own when-to-use examples and anti-patterns (Zod rule, never-push-to-main, release checklist, personal preferences, noisy dependency audit, monorepo orientation), plus one probing the skill's building-enforcement guidance (workflow-spawn enforcement), which exists in no article.
-- `scenarios.md` (this repo) — one probe per ladder rung or durable rule in the skill's own contract, including the rule that "top tier" means the most capable model in the current session rather than a fixed name, and the rule that a model is written explicitly even when it matches the session default.
+- `scenarios.md` (this repo) — one probe per ladder rung or durable rule in the skill's own contract, including the fallback when a tier's model cannot be delegated to, and the rule that a model is written explicitly even when it matches the session default.
 
 **Protocol:** fresh-context subagent given ONLY the skill file ("Read the skill and answer from it alone"), run at the weakest tier the skill should serve *before* stronger ones. Baselines are recorded in each scenario file with dates and **full model IDs captured at run time, never aliases** — an alias ("sonnet") goes ambiguous the moment a new generation ships, which is exactly when a stamp needs to say what it was measured on. Grading rule: if a model at or below sonnet misses a scenario, the skill's guidance is insufficient — fix the skill, not the model.
 

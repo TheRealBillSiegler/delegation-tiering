@@ -146,7 +146,7 @@ The strongest case for fable on the gate is independence. Claude Code's default 
 - The draft's opus band, medium to high, sat below the trigger it set for fable, an opus attempt at `xhigh`.
 - The draft's rule to omit effort for Haiku 4.5 guarded against no observed failure (section 4, the VS Code calls).
 
-The rewrite under the owner's ruling (1,293 words) answered 35 of 36 keyed scenarios in two final blind walks. The miss was a production-config gate answer whose model field said fable while its note concluded opus.
+The rewrite under the owner's ruling (1,293 words as walked) answered 35 of 36 keyed scenarios in two final blind walks. The miss was a production-config gate answer whose model field said fable while its note concluded opus. The same rewrite at 0.1.2's tier assignments answered 36 of 36 against its own key in two blind walks. The shipped text adds three sentences no scenario turns on: the canary sentence, the unreadable-`scriptPath` clause, and the staleness stamp.
 
 ## Remedies
 
