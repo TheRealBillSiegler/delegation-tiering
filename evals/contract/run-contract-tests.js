@@ -17,9 +17,14 @@ const { LADDER: TIERS, MODELS } = require(path.join(__dirname, '..', '..', 'hook
 const CASES = [
   { fixture: 'agent-no-model.json', expect: { decision: 'deny', contains: ['no explicit model', 'lowest sufficient tier', TIERS] } },
   { fixture: 'agent-with-model.json', expect: { decision: 'allow', contains: ['chosen tier sonnet'], absent: [TIERS] } },
-  { fixture: 'agent-fork-no-model.json', expect: { decision: 'allow', contains: ['fork'], absent: [TIERS] } },
+  { fixture: 'agent-fork-no-model.json', expect: { decision: 'allow', contains: ['fork', 'non-fork subagent'], absent: [TIERS] } },
+  // env-vars.md: an on/off variable is on for `1`, `true`, `yes`, or `on`, in any casing.
   { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '1' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'TRUE' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'yes' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'On' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
   { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '0' }, expect: { decision: 'deny', contains: ['no explicit model'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'off' }, expect: { decision: 'deny', contains: ['no explicit model'] } },
   { fixture: 'wf-masking.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('do x')"] } },
   { fixture: 'wf-clean.json', expect: { decision: 'allow', contains: ['lints clean'], absent: [TIERS] } },
   { fixture: 'wf-predefined.json', expect: { decision: 'allow', contains: ['cannot be linted'] } },

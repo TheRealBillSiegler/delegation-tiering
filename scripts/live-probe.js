@@ -41,12 +41,16 @@ const PROBE =
 const args = ['-p', '--debug', '--model', 'haiku'];
 if (dev) args.unshift('--plugin-dir', path.join(__dirname, '..'));
 
+// The probe asserts the deny paths, so the forced-model setting, under which
+// the gate allows a model-less Agent call, stays out of the probe session.
+const { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: _forced, ...probeEnv } = process.env;
+
 console.log('probing' + (dev ? ' (working-tree plugin via --plugin-dir)' : ' (installed plugins)') + ' — one metered session...');
 const run = spawnSync('claude', args, {
   encoding: 'utf8',
   shell: process.platform === 'win32', // claude is a .cmd shim on Windows
   input: PROBE,
-  env: { ...process.env, DELEGATION_LEDGER: ledger },
+  env: { ...probeEnv, DELEGATION_LEDGER: ledger },
   timeout: 300000,
 });
 const out = (run.stdout || '') + '\n' + (run.stderr || '');

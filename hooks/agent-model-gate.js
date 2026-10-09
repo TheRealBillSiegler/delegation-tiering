@@ -27,10 +27,11 @@ function logDenial(tool, detail) {
 
 const TIERS = require('./tiers').LADDER;
 
-// CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 makes Claude Code run every subagent on
-// one model and removes the Agent tool's `model` parameter.
+// CLAUDE_CODE_SUBAGENT_MODEL_FORCE makes Claude Code run every subagent on one
+// model and removes the Agent tool's `model` parameter. It is on for any value
+// env-vars.md reads as on: `1`, `true`, `yes`, or `on`, in any casing.
 function subagentModelForced() {
-  return ['1', 'true'].includes(String(process.env.CLAUDE_CODE_SUBAGENT_MODEL_FORCE || '').trim().toLowerCase());
+  return ['1', 'true', 'yes', 'on'].includes(String(process.env.CLAUDE_CODE_SUBAGENT_MODEL_FORCE || '').trim().toLowerCase());
 }
 
 // Same-length blanking of string literals and comments, so an index found in
@@ -160,11 +161,11 @@ process.stdin.on('end', () => {
   if (input.tool_name !== 'Agent') return;
 
   // A fork runs on the parent session's model and ignores `model` (Agent tool
-  // schema; sub-agents.md), so there is no tier to choose. Demanding one would
-  // make Claude restate a value that never takes effect, and the ledger would
-  // record it as a choice.
+  // schema; sub-agents.md). Demanding one would make Claude restate a value that
+  // never takes effect, and the ledger would record it as a choice. Forking
+  // still chooses a tier, the session's own, so the note says when that fits.
   if (ti.subagent_type === 'fork') {
-    allow('delegation-tiering: a fork runs on the session model, so it has no tier to choose.');
+    allow('delegation-tiering: a fork runs on the session model, so forking chooses that tier. Fork only when the session model is the lowest sufficient tier or the shared context is the point; otherwise spawn a non-fork subagent with an explicit model.');
     return;
   }
 
