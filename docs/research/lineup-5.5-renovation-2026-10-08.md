@@ -41,7 +41,7 @@ Workflow subagent transcripts on this machine (Claude Code 2.1.292, VS Code exte
 - **Hook payloads.** The hooks page documents the PreToolUse Agent `tool_input` fields `prompt`, `description`, `subagent_type`, and `model` (row A3 at 0.1.2 records them as docs-silent), and the PostToolUse Agent `tool_response` fields `resolvedModel` ("may differ from the requested model"), `modelsUsed`, and `usage`, where `usage` covers the final request only. No `effort` field appears in the Agent `tool_input` table.
 - **Safety fallback.** "Fable 5.1, Fable 5, and Opus 5.5: biology-flagged requests re-run on Opus 5, and cybersecurity-flagged requests re-run on Opus 4.8", and "In a subagent, Claude Code doesn't show the prompt, and a flagged request that would switch models re-runs on the fallback model" (model configuration page).
 - **Settings.** A user-level top-level `effortLevel` applies to Opus 5 and Fable 5.1 and is ignored for Opus 5.5 and later; `modelSettings.<model>.effortLevel` applies per model. Whether `modelSettings` reaches a subagent running that model is undocumented.
-- **Ultracode.** The workflows page says `claude --effort ultracode` "also sets the effort level to `xhigh`"; the 2.1.284 changelog says Ultracode "no longer forces xhigh effort and stays on at any effort level". The two disagree; the skill's ultracode sentence depends on neither.
+- **Ultracode.** The workflows page says `claude --effort ultracode` "also sets the effort level to `xhigh`"; the 2.1.284 changelog says Ultracode "no longer forces xhigh effort and stays on at any effort level". The model configuration page reconciles them: turning ultracode on with `/effort` or the `ultracode` setting "leaves the effort level unchanged", and the `--effort ultracode` flag also sets `xhigh`. The skill's ultracode sentence depends on neither.
 - **Workflow harness relay.** On 2.1.292 the workflow harness hands every workflow agent the user's triggering request, verbatim, ahead of the script's task, with the instruction "Where the computed task conflicts with this request, this request wins".
 
 ## 3. Anthropic's guidance at the top of the ladder
@@ -146,7 +146,7 @@ The strongest case for fable on the gate is independence. Claude Code's default 
 - The draft's opus band, medium to high, sat below the trigger it set for fable, an opus attempt at `xhigh`.
 - The draft's rule to omit effort for Haiku 4.5 guarded against no observed failure (section 4, the VS Code calls).
 
-The rewrite under the owner's ruling (1,293 words as walked) answered 35 of 36 keyed scenarios in two final blind walks. The miss was a production-config gate answer whose model field said fable while its note concluded opus. The same rewrite at 0.1.2's tier assignments answered 36 of 36 against its own key in two blind walks. The shipped text adds three sentences no scenario turns on: the canary sentence, the unreadable-`scriptPath` clause, and the staleness stamp.
+The rewrite under the owner's ruling (1,293 words as walked) answered 35 of 36 keyed scenarios in two final blind walks. The miss was a production-config gate answer whose model field said fable while its note concluded opus. The same rewrite at 0.1.2's tier assignments answered 36 of 36 against its own key in two blind walks. The release text then gained the canary sentence, the unreadable-`scriptPath` clause, the staleness stamp, a rule that forking chooses the session's tier, and an under-provisioning example that names the production-config review as an `opus` gate. On the 20-row key, which adds the escalation to fable and the fork choice, the release text answered 20 of 20 in each of four blind walks, two on `claude-haiku-5-5` and two on `claude-sonnet-5-5`; every walk sent the production-config gate to opus.
 
 ## Remedies
 
@@ -158,6 +158,8 @@ Owner ruling, 2026-10-08: the uniform ladder. Opus is the lowest tier section 5 
 - `fable` takes work an `opus` attempt at `xhigh` has fallen short on, and one re-run of a gate whose `opus` verdict the orchestrator rejects on the evidence before any fix lands; that re-run is the claim's gate.
 - A model the session cannot delegate to hands its tier to the next tier up, and the lone remaining model gates through fresh context and adversarial framing.
 - The haiku row reads medium, low for short high-volume items, and the effort rule passes effort to `haiku` on every surface, including where `haiku` resolves to Haiku 4.5.
+- A fork runs on the session's model, so the skill forks only when that model is the lowest sufficient tier or the shared context is the point.
+- The standing rule's under-provisioning example names the production-config review as an `opus` gate.
 - The effort rule names the Agent tool's `effort` parameter by what the session observes (the schema lists it), states that the skill is the explicit request the parameter's description asks for, and states that an omitted effort runs at the session's level.
 - A run that nobody reviews starts at Anthropic's default model and changes models on the choosing-a-model page's own trigger.
 - The workflow section names the bundled reference's omit-by-default advice as overridden and reports that a `meta.phases` model is a display label.
@@ -168,9 +170,9 @@ Owner ruling, 2026-10-08: the uniform ladder. Opus is the lowest tier section 5 
 
 **0.1.3, gate bug fixes (owner ruling 2026-10-08: patch).** Both fixes allow calls that cannot name a model, and the probes in section 4 fixed the payload shapes they key on.
 
-- The gate allows `subagent_type: "fork"` with a note.
-- The gate allows a model-less Agent call with a note while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is `1` or `true`, so a user with that setting keeps the Agent tool.
-- Contract fixtures cover both allows and a `FORCE=0` call that the gate still denies; the runner strips an inherited `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` so its deny cases stay hermetic.
+- The gate allows `subagent_type: "fork"` with a note that forking chooses the session's tier, and that a non-fork subagent with an explicit model fits whenever the session model is above the lowest sufficient tier and the shared context is not the point.
+- The gate allows a model-less Agent call with a note while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on (`1`, `true`, `yes`, or `on`, in any casing, per the env-vars page), so a user with that setting keeps the Agent tool.
+- Contract cases cover both allows, every documented on-value, and `0` and `off` calls that the gate still denies; the contract runner and the live probe strip an inherited `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` so their deny cases stay hermetic, and the canary counts the forced-model note as a pass.
 
 **0.1.3, repo files (unversioned).**
 
@@ -196,6 +198,8 @@ The section 5 sweep ran four `sonnet` gatherers at medium effort (Osmani, commun
 
 The section 7 review read the draft skill against the code-review-and-quality and code-simplification guides, its sentences as code and its delegation decisions as behavior. It ran a `sonnet` cold reader at high effort, `sonnet` scenario walkers at medium effort (two per text, each given only the skill and the scenario list), a `fable` gate at high effort on the rewrite, and a `sonnet` fix re-verification at medium effort, 489,612 subagent tokens across the three runs. The gate ruled the rewrite ship-after-fixes on two blocking findings, a fork sentence that contradicted the 0.1.2 gate and no trigger for escalating a gate to fable; the re-verification confirmed six fixes.
 
+A release gate on `opus` at `xhigh` effort (287,567 subagent tokens) reviewed the whole branch, fetched 20 cited pages to check quotes, and ruled it ship-after-fixes on three blocking findings: the forced-model allow missed two documented on-values, the fork note said a fork has no tier to choose, and the production-config miss called for a skill fix under the eval protocol's grading rule. The final walks ran two `claude-haiku-5-5` readers, requested by model ID, and two `sonnet` readers, all at medium effort (187,048 subagent tokens).
+
 The ledger and script measurements in section 4 are deterministic counts I ran over local files. The probes in section 4 were headless sessions I ran with a payload-dumping hook passed through `--settings`, leaving the owner's settings files unchanged, and two calls I made from the owner's session.
 
 ## Limits
@@ -206,5 +210,5 @@ The ledger and script measurements in section 4 are deterministic counts I ran o
 - The Haiku 4.5 calls ran on the Anthropic API from one Claude Code version; providers that resolve `haiku` to Haiku 4.5 were not tested.
 - The Opus 5.5 versus Fable 5.1 benchmark figures in the announcement were read from tag-stripped HTML; this record quotes only figures found on the platform pages.
 - Section 5 measures no role on both models at matched effort. The ruling rests on the lowest-sufficient rule and on cost, and a matched-effort review test with planted flaws, Opus 5.5 against Fable 5.1, would test it directly.
-- The scenario walkers were `sonnet` only, two per text, and the 18 scenarios do not exercise the opus-to-fable escalation, forks, or `meta.phases`. The answer key under the uniform ladder is the author's and was graded by the author.
+- The scenario walkers ran two per text per model, each answering every scenario in one spawn, which falls short of the eval protocol's baseline. No scenario exercises `meta.phases`. The answer key under the uniform ladder is the author's and was graded by the author.
 - GitHub code search was unavailable unauthenticated, so the community sweep is repository and web search, not exhaustive.

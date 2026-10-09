@@ -29,7 +29,7 @@ No Agent or Workflow content. The page repeats the non-blocking failure notice a
 
 ### plugins-reference.md — CLAIM-AFFECTING (rows A10, A17)
 
-- **A10**: SUPPORTED for the data directory and hook export; the uninstall detail moved to [plugins/cli-reference](https://code.claude.com/docs/en/plugins/cli-reference), which deletes the data directory only "when uninstalling from the last scope" and keeps it with `--keep-data`, when another installed plugin shares the folder, or when the install list cannot be read. README's Configuration paragraph needs the last-scope qualifier, and A10 needs cli-reference as a second basis.
+- **A10**: SUPPORTED for the data directory and hook export; the uninstall detail moved to [plugins/cli-reference](https://code.claude.com/docs/en/plugins/cli-reference), which says "When you uninstall a plugin from the last scope it's installed at, Claude Code also deletes" the data directory, and keeps it with `--keep-data`, when another installed plugin uses the same folder, or when Claude Code can't read the list of installed plugins back. README's Configuration paragraph needs the last-scope qualifier, and A10 needs cli-reference as a second basis.
 - **A17**: DOCUMENTED. "In skill, command, and agent content, write the `${...}` reference in the Markdown body instead, and Claude Code substitutes the path inline." The marketplace-install caveat in the row stands.
 - Additive: plugins may ship `settings.json`, of which only `agent` and `subagentStatusLine` take effect, so a plugin cannot ship a model default.
 
@@ -49,7 +49,7 @@ No Agent or Workflow content. The page repeats the non-blocking failure notice a
 - **A11** (Workflow half): SUPPORTED. The prompt-cache sentence still presupposes per-agent model and effort, and the page names the `/workflow-authoring` bundled skill as the option reference.
 - **A8**: unchanged and docs-silent; the page names no per-spawn hook event.
 - New: "Claude Code picks each workflow agent's model in the same order it uses for subagents. A model the script names for a stage counts as the per-invocation model in that order. When nothing else assigns one, the agent runs on your session's model." Also a `workflowSizeGuideline` setting.
-- Conflict: the page says `claude --effort ultracode` "also sets the effort level to `xhigh`"; the 2.1.284 changelog says Ultracode "no longer forces xhigh effort". Not anchored by any skill claim.
+- Apparent conflict: the page says `claude --effort ultracode` "also sets the effort level to `xhigh`"; the 2.1.284 changelog says Ultracode "no longer forces xhigh effort". The model configuration page reconciles them: turning ultracode on with `/effort` or the `ultracode` setting "leaves the effort level unchanged", and the `--effort ultracode` flag also sets `xhigh`. Not anchored by any skill claim.
 
 ## Unanchored sources that changed claims
 
