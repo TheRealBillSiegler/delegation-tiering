@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: the model-gate:allow marker inside the call's own argument list suppresses the flag for an indirect model.","tool_name":"Workflow","tool_input":{"script":"const opts = { effort: 'low' }; await agent('x', opts /* model-gate:allow */); await agent('y', { model: 'haiku' });"}}

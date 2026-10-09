@@ -30,6 +30,13 @@ const CASES = [
   { fixture: 'wf-predefined.json', expect: { decision: 'allow', contains: ['cannot be linted'] } },
   { fixture: 'wf-string-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
   { fixture: 'wf-comment-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  // Own-arguments lint: a call passes on a model key inside its own balanced argument list, and nowhere else.
+  { fixture: 'wf-later-model.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('do x')"] } },
+  { fixture: 'wf-prompt-model.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', 'Pick the model'] } },
+  { fixture: 'wf-marker-inside.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-marker-after.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('x', opts)"] } },
+  { fixture: 'wf-quoted-key.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-truncated.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('x', { effort: 'low'"] } },
 ];
 
 // Gate cases share a temp ledger so denial-logging is assertable.

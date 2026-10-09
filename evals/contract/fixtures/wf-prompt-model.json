@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: a model-less call whose prompt string mentions model: is still model-less, because only the call's own code-level argument text counts. Regression for the span-masking defect measured 2026-10-08.","tool_name":"Workflow","tool_input":{"script":"await agent('Pick the model: haiku or sonnet for this step', { effort: 'low' });"}}

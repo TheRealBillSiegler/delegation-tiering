@@ -97,14 +97,26 @@ if (process.argv[2] === '--test') {
     { src: "const P = 'which model an agent() call should use'; await agent(P, { model: 'sonnet' });", want: 0, name: 'agent( inside a string is not a call' },
     { src: "// every agent( needs a model\nawait agent('x', { model: 'sonnet' });", want: 0, name: 'agent( inside a comment is not a call' },
     { src: "await agent(`multi\nline agent() prompt`, { model: 'sonnet' }); await agent('z');", want: 1, name: 'template literal blanked, later model-less call still caught' },
+    { src: "await agent('x'); const lenses = [{ model: 'haiku' }];", want: 1, name: 'model: in later code does not rescue the call' },
+    { src: "await agent('pick the model: haiku', { effort: 'low' });", want: 1, name: 'model: in the prompt string does not count' },
+    { src: "await agent('x', { /* model: haiku */ effort: 'low' });", want: 1, name: 'model: in a comment inside the call does not count' },
+    { src: "await agent('x', opts /* model-gate:allow */);", want: 0, name: 'marker inside the call allows it' },
+    { src: "await agent('x', opts); /* model-gate:allow */", want: 1, name: 'marker after the closing paren does not allow it' },
+    { src: "await agent('x', { 'model': 'haiku' }); await agent('y', { \"model\": 'haiku' });", want: 0, name: 'quoted model keys count' },
+    { src: "await agent('x', c ? 'model' : 'haiku');", want: 1, name: 'a quoted model that is not a key does not count' },
+    { src: "await agent('x', { ...base });", want: 1, name: 'spread options stay flagged' },
+    { src: "await agent('ok', { model: 'haiku' }); await agent('x', { effort: 'low'", want: 1, name: 'truncated script: unbalanced call falls back, no crash' },
+    { src: "await agent('x', { model: 'haiku'", want: 0, name: 'truncated script: fallback span still sees a model' },
   ];
+  let failed = 0;
   for (const c of checks) {
     const got = lintScript(c.src);
     if (got.length !== c.want) {
+      failed++;
       console.error('lint self-test FAILED (' + c.name + '): ' + JSON.stringify(got));
-      process.exit(1);
     }
   }
+  if (failed) process.exit(1);
   console.log('lint self-test OK (' + checks.length + ' cases)');
   process.exit(0);
 }

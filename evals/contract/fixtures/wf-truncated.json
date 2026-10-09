@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: a truncated script whose last call has no closing paren falls back to the span-to-next-call check and must not crash; the model-less truncated call is still denied.","tool_name":"Workflow","tool_input":{"script":"await agent('ok', { model: 'haiku' }); await agent('x', { effort: 'low'"}}
