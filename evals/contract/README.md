@@ -26,15 +26,21 @@ In text: run-contract-tests.js pipes each fixture into both agent-model-gate.js,
 | `agent-no-model.json` | Deny branch: Agent call without `model` is denied with re-issue instructions |
 | `agent-with-model.json` | Allow branch: explicit model passes; reminder stays concise (no tier table) |
 | `wf-masking.json` | Regression for the 2026-08-05 span-boundary bug: space-styled `agent (` must not hide a model-less neighbor |
+| `wf-later-model.json` | Regression for the 2026-10-08 masking defect: a `model:` in later code, after the call's closing paren, does not rescue a model-less call |
+| `wf-prompt-model.json` | Same defect, second cause: `model:` text inside the call's own prompt string does not count |
+| `wf-marker-inside.json` | `model-gate:allow` inside the call's own argument list allows an indirect model |
+| `wf-marker-after.json` | A `model-gate:allow` after the call's closing paren suppresses nothing |
+| `wf-quoted-key.json` | A quoted `'model':` or `"model":` key counts as a model key |
+| `wf-truncated.json` | A script cut off mid-call falls back to the span-to-next-call check and neither crashes nor passes a model-less call |
 | `wf-clean.json` | Workflow lint allow branch: all `agent()` calls carry models |
 | `wf-predefined.json` | Fail-open branch: predefined workflow name, no script text to lint |
 | scriptPath lint (deny) | Lint reads the script file from disk and denies a model-less call |
 | scriptPath unreadable | Documented fail-open: unreadable path produces silence, not a crash |
 | ledger round-trip | One JSONL line per delegation; Agent `model` and Workflow `modelLiterals[]` captured |
-| escape-hatch scope | `model-gate:allow` suppresses only the call whose span it sits in — a marker in a file header does not |
+| escape-hatch scope | `model-gate:allow` suppresses only the call whose own argument list it sits in — a marker in a file header or after the closing paren does not |
 | unknown tool | A tool the gate has no rule for passes through untouched, so widening the matcher cannot hard-block it |
 | denial logging | Every deny appends a counted `denied: true` ledger line; the expected count is tallied as denials happen, not hardcoded |
-| `--test` self-check | The span-boundary regression embedded in the hook itself still passes |
+| `--test` self-check | The lint regressions embedded in the hook itself (span boundaries, literal blanking, own-argument scoping, indirect models, truncated scripts) still pass |
 
 ## Growth rule
 

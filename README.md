@@ -32,7 +32,7 @@ The doubled name in the second form is correct — the marketplace and the plugi
 Details:
 
 - **delegation-tiering skill** loads on invocation — the judgment layer, not the always-loaded floor (see Three-layer enforcement below).
-- **agent-model-gate** `--test` embeds the regression case for the lint's known failure class: an `agent (` call written with a space must not throw off call-span detection and hide a neighboring model-less call.
+- **agent-model-gate** `--test` embeds the regression case for the lint's known failure class: an `agent (` call written with a space must not throw off call-span detection and hide a neighboring model-less call, and a `model:` in later code or in a call's own prompt string must not hide a model-less call, because each call is judged on its own argument list.
 - **delegation-ledger** each line records model, agent type, description. A workflow call records `modelLiterals` — named for what it holds: the model strings scanned out of the script text. One entry per literal, not per agent, so a `model:` reused across a fan-out appears once and a non-agent occurrence still counts.
 
 ## Verify
@@ -43,12 +43,12 @@ In a live session with the plugin enabled:
 /delegation-tiering:canary
 ```
 
-It installs the always-loaded rule file and proves both deny paths live. Run it because the gate's worst failure is silent: if `node` does not resolve when the hook runs, the hook produces no output, and a hook with no output is an allow — no denial, no ledger line, no error. The plugin looks installed and enforces nothing. The canary is the detector; the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) (dependency A9).
+It installs the always-loaded rule file and proves both deny paths live. Run it because the gate's worst failure is silent: if `node` does not resolve when the hook runs, the hook produces no output, and a hook with no output is an allow — no denial, no ledger line, and no error the model can see (the hooks page describes a non-blocking failure notice for a hook that cannot start; a headless run on 2026-09-14 showed none). The plugin looks installed and enforces nothing. The canary is the detector; the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) (dependency A9).
 
 ## Configuration
 
 - **Ledger location** — `${CLAUDE_PLUGIN_DATA}/delegation-ledger.jsonl`, the [per-plugin data directory](https://code.claude.com/docs/en/plugins-reference) Claude Code provisions and exports to hook processes. Set `DELEGATION_LEDGER` to redirect it elsewhere.
-- **Off switch:** `/plugin disable delegation-tiering` deactivates the components ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). Uninstalling removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
+- **Off switch:** `/plugin disable delegation-tiering` turns the plugin off ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). Uninstalling from the plugin's last scope removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
 
 ## Three-layer enforcement
 
@@ -56,7 +56,7 @@ It installs the always-loaded rule file and proves both deny paths live. Run it 
 2. **Skill** (on invocation): the judgment layer — which tier is lowest-sufficient.
 3. **Hook** (every Agent/Workflow call): the deterministic gate. It has documented limits and one escape hatch — the delegation-tiering skill's Enforcement section states them operationally, and the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) is the canonical, dated claim set for every path and gap.
 
-The ledger sits alongside as the observability layer: the gate can force models to be *explicit*, but only review of actual choices can show whether tiering judgment held. Its weekly summary (run from the plugin repo) is the evidence base for a deferred hardening — denying top-tier Agent calls that state no rationale — described in the repo's [docs/ROADMAP.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/ROADMAP.md).
+The ledger sits alongside as the observability layer: the gate can force models to be *explicit*, but only review of actual choices can show whether tiering judgment held. Its summary, run on demand from the plugin repo, is the evidence base for a deferred hardening — denying `fable` Agent calls that state no rationale — described in the repo's [docs/ROADMAP.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/ROADMAP.md).
 
 ### Coverage map
 
@@ -67,14 +67,14 @@ flowchart TD
     G -- "no model / lint fails" --> DENY["denied, with the fix"]
     G -- "explicit models" --> RUN["runs, reminder injected"]
     RUN --> LED["ledger line appended"]
-    IN["agent() inside a workflow"] -. "not hookable" .-> RUN
+    IN["agent() inside a workflow"] -. "cannot be gated" .-> RUN
 ```
 
 In text: Agent calls and Workflow launches hit the PreToolUse gate, which denies them when no model is named or the lint fails, and otherwise lets them run with a tiering reminder and a ledger line; agent() spawns inside an already-running workflow reach neither the gate nor the ledger.
 
 ## Sunset criterion
 
-This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665, #44976, #67898), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
+This plugin is a stopgap for a missing platform feature, not a product to defend. If Claude Code ships native per-delegation model routing (demand is tracked upstream in anthropics/claude-code#27665; #44976 and #67898 closed without shipping it), verify parity against the repo's [docs/COVERAGE.md](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) — every delegation path, deterministically enforced — and archive this plugin. The repo's drift pipeline exists to notice that day, not to outlive it.
 
 ## Source fidelity
 
@@ -82,6 +82,6 @@ Every claim in this plugin carries one of three provenance tiers — article dig
 
 ## Design rationale
 
-Why bottom-up, when the source article's default is top-down: the article recommends "start with the most intelligent generally available model and use effort level to dial in performance and cost." This plugin deliberately takes the article's alternative path because it operates strictly downstream of that choice — the orchestrator doing the delegating already **is** the most capable model available in the session, and it stays in the loop, writing the spec, choosing the tier, and reviewing the output. Supervision flips the risk asymmetry: under-provisioning is caught at review and upgraded on evidence, while over-provisioning multiplies across every fan-out. That structure is the article's own advisor strategy generalized across the ladder; with no orchestrator in the loop, the premise is gone, and the skill says to follow the article's top-down default.
+Why bottom-up, when the source article's default is top-down: the article recommends "start with the most intelligent generally available model and use effort level to dial in performance and cost." This plugin deliberately takes the article's alternative path because it operates strictly downstream of the session-model choice — an orchestrator, Opus by default in Claude Code, stays in the loop, writing the spec, choosing the tier, and reviewing the output. Supervision flips the risk asymmetry: under-provisioning is caught at review and upgraded on evidence, while over-provisioning multiplies across every fan-out. The top of the ladder follows Anthropic's current default order ([choosing a model](https://platform.claude.com/docs/en/about-claude/models/choosing-a-model)): opus takes the open adversarial gate, open-ended design, and security-boundary reads, and fable takes what opus at xhigh falls short on. The evidence behind that ruling is in the repo's [lineup research record](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/research/lineup-5.5-renovation-2026-10-08.md). In Claude Code's own comparison of ways to combine model strengths ([advisor page](https://code.claude.com/docs/en/advisor), "Compare with related features"), this plugin is the "Subagents with model set" row: the chosen model runs for the entire delegated subtask. The advisor tool is the sibling row, a stronger model consulted at decision points mid-task; when a session runs a cheaper main model with an advisor attached, that advisor is the executor's escalation path, and delegated gates still follow the ladder. With no orchestrator in the loop, the premise is gone, and the skill says to start at Anthropic's default model and change models only on that page's own trigger.
 
-The skill's selection questions 1–3 adapt three of the article's four (task difficulty, latency, unit economics); the access-constraints question is deliberately dropped — every model available to the session is equally accessible to a delegated agent, so availability is already folded into the top-tier definition. Question 4 (did design already happen?) is a delegation-specific addition with no article counterpart.
+The skill's selection questions 1–3 adapt three of the article's four (task difficulty, latency, unit economics); the access-constraints question is deliberately dropped — every model available to the session is equally accessible to a delegated agent, so availability is already folded into the skill's missing-model rule. Question 4 (did design already happen?) is a delegation-specific addition with no article counterpart.

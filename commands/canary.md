@@ -14,7 +14,7 @@ Run the delegation-tiering verification canary. Execute the steps in order; do n
    Every delegated agent — an Agent tool call, a Workflow `agent()` call, or any other worker this session spawns (nested subagents, headless `claude -p` children, scheduled runs) — gets an explicit `model` (and `effort` where supported) at the lowest tier sufficient for its task. Never inherit the session model silently; if inheritance genuinely is the lowest sufficient choice, write that model out explicitly. Tier ladder and rationale: the delegation-tiering skill (delegation-tiering plugin).
    ```
 
-2. **Live canary A — Agent path.** Issue one Agent tool call with a trivial prompt ("Reply with exactly: OK") and NO `model` parameter. Expected: the call is DENIED with a reason mentioning "no explicit model". If it runs instead, the gate is not firing — report and stop.
+2. **Live canary A — Agent path.** Issue one Agent tool call with a trivial prompt ("Reply with exactly: OK") and NO `model` parameter. Expected: the call is DENIED with a reason mentioning "no explicit model". If it runs instead, the gate is not firing — report and stop. Exception: while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on, the Agent tool has no `model` parameter and the gate allows the call with a note naming that variable; that note is a pass for this step.
 
 3. **Live canary B — Workflow path.** Launch a minimal Workflow whose script contains exactly one `agent()` call with no `model` (trivial prompt, meta name `gate-canary`). Expected: the LAUNCH is denied with the offending call quoted. If it launches, stop the run immediately and report — the Workflow lint is not firing.
 

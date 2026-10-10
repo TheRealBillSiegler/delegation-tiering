@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: a model-less call is not rescued by a model: key in later code that follows its closing paren (a lens or batch table, a result-mapping object) before the next call. Regression for the span-masking defect measured 2026-10-08.","tool_name":"Workflow","tool_input":{"script":"const r = await agent('do x'); const lenses = [{ name: 'a', model: 'haiku' }];"}}

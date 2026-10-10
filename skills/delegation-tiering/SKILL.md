@@ -5,85 +5,70 @@ description: Use when spawning or configuring any delegated agent — an Agent t
 
 # Delegation Tiering
 
-Standing rule: every delegated agent gets an **explicit model** at the **lowest tier sufficient** for its task. State the tiering rationale when presenting a plan that spawns agents.
+Standing rule: every delegated agent gets an **explicit model** at the **lowest tier sufficient** for its task, and an **explicit effort** inside that tier's band wherever the call takes one. Sufficient cuts both ways: `fable` for scouting is as wrong as `sonnet` for the final adversarial review of a production config, which is an `opus` gate. State the tiering rationale when presenting a plan that spawns agents.
 
-Scope: supervised delegation only — this ladder is bottom-up because the orchestrator, already the most capable model in the session, stays in the loop: writing the spec, choosing the tier, reviewing the output. For a standalone workload with no orchestrator, work top-down instead: start with the most capable model and dial effort.
+Scope: supervised delegation, where the orchestrator writes the spec, picks the tier, and reviews the output. Delegate bulk or routine work, independent pieces, or work larger than one context; keep a single dependent chain that fits one context. A run that nobody reviews is not supervised: start it at Anthropic's default model (see Source), tune effort, and change models only on that page's own trigger.
 
 ## The ladder
 
 Stop at the first tier that is sufficient:
 
 | Tier | Effort | Use for |
-| ------ | -------- | --------- |
-| fastest/cheapest (`haiku`) | low–medium | Mechanical work: repo/file scouting, verbatim extraction, inventories, reflows, format conversion |
-| balanced (`sonnet`) | medium | Pattern-following implementation with verified anchors, doc research, toolchain iteration, fidelity checks |
-| balanced (`sonnet`) | high | Implementation from near-code design; complex but well-specified multi-file edits |
-| reasoning (`opus`) | high | Reasoning-intensive work where the balanced tier demonstrably falls short AND the task is not a top-tier category |
-| top tier (most capable in session: `fable` — the Claude 5 flagship above `opus` — else `opus`, else `sonnet`) | high–xhigh | Top-tier categories ONLY: adversarial review gates, open-ended design, security-boundary reads |
+| --- | --- | --- |
+| `haiku` | medium; low for short, high-volume items | Mechanical work: scouting, verbatim extraction, inventories, reflows, format conversion |
+| `sonnet` | medium | Pattern-following implementation with verified anchors, doc research, toolchain iteration, fidelity checks |
+| `sonnet` | high | Implementation from near-code design; complex but well-specified multi-file edits |
+| `opus` | medium–xhigh | Reasoning-heavy work where `sonnet` demonstrably falls short |
+| `opus` | high–xhigh | Open adversarial gates (once per claim), open-ended design, security-boundary reads |
+| `fable` | high–xhigh | Work an `opus` attempt at xhigh has fallen short on |
 
-Durable rules about the table:
+Rules about the table:
 
-- **Bands are sweet spots, not fences.** Below-band is fine for easy instances. Wanting effort *above* a tier's band is the tell that the task has left the tier: a `haiku` file-inventory whose prompt keeps growing judgment calls — "skip vendored code", "decide whether each TODO is stale" — until you're reaching for `effort: high` isn't a hard inventory anymore; the judgment is the work, so it's `sonnet` at medium, not `haiku` at high.
-- **"Top tier" means the most capable model available in the session** — not last generation's flagship by habit, and not a fixed name. In a fable session, top tier is fable; in fable-less sessions (opus- or sonnet-topped plans, fast mode), the most capable available model takes the top-tier categories. When the ladder compresses — e.g. a sonnet-topped session where sonnet is both worker and gate — the gate stage still earns its place through independence (fresh context, adversarial framing), not extra capability. When the model lineup changes, remap tiers by position (fastest/cheapest ↔ most capable), not by name — the names in parentheses reflect the Claude 5 generation.
-- **When fable is available, top-tier categories stay on fable.** Larger models carry more wisdom, creativity, and writing skill than similar benchmark scores suggest — exactly the margin adversarial gates and open-ended design pay for. Opus substitutes as top tier; it does not co-equal fable when fable is present.
-- **Both directions fail the rule.** Over-provisioning (top tier for scouting) and under-provisioning (balanced tier for the final adversarial review of production config) are equally wrong.
-- **Effort is per-call only on some surfaces.** Workflow `agent()` calls accept `effort` per call; direct Agent tool calls have no effort parameter and inherit the session's effort level — though a custom agent type can pin `effort` in its definition frontmatter. If the session runs below a tier's band for a top-tier category, route through a workflow or a definition-pinned agent type, or accept the session effort — model class is the bigger lever: a higher-class model at low effort often beats a smaller model at high.
-- **Orchestration modes don't change the ladder.** Exhaustive-verification modes (e.g. ultracode) scale how many agents you spawn and how many verify stages you add — not the tier each agent gets. Fan-out multiplication makes over-provisioning costlier, not more acceptable; the advisor pattern below is what heavy orchestration should look like.
+- **Bands are sweet spots, not fences.** Below-band is fine for easy instances. Sweep effort within the band before changing tier; wanting effort *above* the band means the task has left the tier. A `haiku` inventory whose prompt keeps growing judgment calls ("skip vendored code", "decide whether each TODO is stale") is no longer an inventory: the judgment is the work, so it goes to `sonnet` at medium, not `haiku` at high.
+- **Where effort goes.** Pass `effort` on every `agent()` call in a workflow, and on every Agent call whose tool schema lists an `effort` parameter; this is the explicit request that parameter's description asks for. Pass it for `haiku` as well: where `haiku` still means Haiku 4.5, which has no effort setting, the call runs anyway. An omitted effort runs at the session's level, not the model's default. When the Agent tool has no `effort` parameter and the band matters, route the call through a workflow or an agent type whose definition pins `effort`.
+- **Forking chooses the session's tier.** A fork runs on the session's model and takes neither `model` nor `effort`, so fork only when the session model is the lowest sufficient tier or the shared context is the point; otherwise spawn a non-fork subagent with an explicit model.
+- **Missing models.** When a tier's model cannot be delegated to (an allowlist, or a provider without it), use the next tier up; when nothing above is available, use the most capable model that is. A lone remaining model is both worker and gate, and the gate still earns its place through independence: fresh context and adversarial framing. When the lineup changes, map tiers by row order, cheapest first, not by name.
+- **Orchestration modes don't change the ladder.** Modes such as ultracode change how many agents and verify stages run, not the tier each one gets. Fan-out multiplies the cost of over-provisioning; use the cheap-finders shape below.
 
 ## Selection questions
 
-1. **How hard is the task?** Difficulty is the main capability axis — model classes differ chiefly in how hard a problem they can reliably carry — and Claude models do not specialize by domain. (Not the *only* axis — see the fable-over-opus ladder rule above.)
-2. **Latency/volume?** High-frequency fan-out stages point down the ladder.
-3. **Unit economics?** Judge cost-per-task, not price-per-token — cost-per-task is often lower for more intelligent models, especially at lower effort levels, even when price-per-token is higher. A weaker model that retries or produces work needing a redo is not cheap.
-4. **Did design already happen?** When a design phase produced implementation-ready specs, downgrade the implementer (work planned at the reasoning tier drops to the balanced tier once specified to near-code level).
+1. **How hard is the task?** Difficulty is the main axis; Claude models do not specialize by domain.
+2. **Latency and volume?** High-frequency fan-out stages point down the ladder.
+3. **Unit economics?** Judge cost per task, not price per token. A tier that keeps producing redos is not sufficient, so one tier up can cost less per task; between tiers of near-equal capability on the task, the cheaper one wins.
+4. **Did design already happen?** Once design has produced near-code specs, the implementer drops a tier (`opus` to `sonnet`).
 
-## Traps
+## Workflow scripts
 
-- **Workflow scripts:** omitting `model` on an `agent()` call inherits the *session* model — often the top tier. Set `model` (and `effort`) explicitly on every `agent()` call; if inheriting genuinely is the lowest sufficient choice, still write the model explicitly so the choice is visible. The launch-time script lint (see Enforcement) backstops this path, but only heuristically — keep the discipline regardless.
-- **Verify/review stages deserve the tier the finding warrants**, not the tier the finder ran at: cheap finders feeding an un-reviewed conclusion is a silent quality ceiling.
+Omitting `model` on an `agent()` call inherits the session model (or `CLAUDE_CODE_SUBAGENT_MODEL`, when set). Set `model` and `effort` on every call; if inheriting is genuinely the lowest sufficient choice, still write the model out. The bundled workflow-authoring reference says to omit `model` by default; this skill overrides that on purpose. Do not rely on a `model` in `meta.phases`: it is reported to be a display label only.
 
 ## Tiering verification work
 
-The tier follows how enumerated the target is — the less anyone has named what to look for, the higher the tier:
+The tier follows how enumerated the target is: the less anyone has named what to look for, the higher the tier.
 
 | Verification shape | The question it answers | Tier |
 | --- | --- | --- |
-| Deterministic check (suite, guard, lint) | Does the command pass? | none — run the script |
-| Fix re-verification | Does each named fix match its named evidence? | `sonnet` |
+| Deterministic check (suite, guard, lint) | Does the command pass? | none: run the script |
+| Fix re-verification | Does each named fix match its named evidence? | `sonnet`, medium |
 | Single-finding adjudication | Is this one claimed defect real? | the tier the finding's severity warrants |
-| Lens review | What's wrong along *this named dimension*? | `sonnet`, high effort |
-| Open adversarial gate | What's wrong that *nobody has named*? | top tier — once per claim |
+| Lens review | What's wrong along *this named dimension*? | `sonnet`, high |
+| Open adversarial gate | What's wrong that *nobody has named*? | `opus`, high–xhigh, once per claim |
 
-The gate earns top tier once per claim, not once per retry: a follow-up named "re-gate" that checks enumerated fixes against expected evidence is the second row, not the last. And every fix that lands with the deterministic check that would have caught it moves its future re-verification to the first row.
+The gate earns its tier once per claim, not once per retry: a follow-up "re-gate" that checks enumerated fixes against expected evidence is fix re-verification. If the orchestrator rejects an `opus` gate's verdict on the evidence before any fix lands, re-run that gate once on `fable`; that run becomes the claim's gate. A gate fanned out per lens or per round is lens review, whatever its label says. Every fix that lands with the deterministic check that would have caught it moves its future re-verification to the first row.
 
-## Advisor pattern
+## Cheap finders, one gate
 
-For fan-outs, prefer cheap workers plus a top-tier gate over top tier everywhere: fastest/balanced-tier finders → top-tier adversarial verify. The economics hold on at least one real benchmark: on SWE-bench Pro, Sonnet 5 with a Fable 5 advisor is within 10% of Fable 5's score at 63% of the price of using Fable 5 for the whole task — a single-benchmark figure, not a general result.
+For fan-outs, use cheap finders (`haiku` or `sonnet`) feeding one gate, not the gate's tier everywhere. Anthropic's advisor tool is the reverse shape, a cheaper executor consulting a stronger model mid-task, so its benchmark figures do not carry over. When the session's main model is a cheaper one with an advisor attached, that advisor is the executor's own escalation path, not a tier on this ladder; delegated gates still follow the ladder.
 
 ## Evaluation
 
-Lowest-sufficient is a hypothesis and the output is its test: review every delegated result at the tier the claim warrants; on failure, rule out setup first (under-specified prompt, missing anchors, broken wiring) before re-dispatching one rung up — a saved rung that produces a redo saved nothing.
-
-The same loop at slower cadence for recurring tasks: public benchmarks saturate with powerful models, so decide with custom evaluations drawn from real workloads — when unsure whether the balanced tier suffices, try it once, inspect, and upgrade on evidence, not vibes. Starting small makes model failures hard to distinguish from setup failures: a mis-specified delegation fails identically at every tier.
+Lowest sufficient is a hypothesis, and the output is its test. Review every delegated result at the tier the claim warrants. On failure, rule out setup first (under-specified prompt, missing anchors, broken wiring), because a mis-specified delegation fails the same way at every tier; then re-dispatch one tier up. A saved tier that produces a redo saved nothing. For recurring tasks, decide with custom evaluations drawn from real workloads, not public benchmarks: when unsure whether `sonnet` suffices, try it once, inspect, and move up on evidence.
 
 ## Enforcement
 
-What backs the standing rule:
-
-- **Agent tool (deterministic):** this plugin's PreToolUse hook (`hooks/agent-model-gate.js`, matcher `Agent|Workflow`) denies Agent calls without `model` and injects a one-line tiering reminder on calls that have one.
-- **Workflow tool (deterministic, heuristic):** the same hook lints the script text at launch and denies on `agent()` calls with no `model:` in their argument span, quoting the offending snippets.
-  - String scan, not a JS parse: it can false-positive on a call whose model arrives via a variable or shared options object, and stray `model:` text between calls can mask a violation. The denial message carries the fix, escape marker included; mechanics are in the plugin's `hooks/README.md`.
-  - Fail-open paths: named/predefined workflows (no script text to lint) are allowed with only a reminder, and an unreadable `scriptPath` is allowed silently — both fall back to the always-loaded rule alone.
-  - Per-spawn events inside a running workflow are not hookable, so launch-time linting is the only deterministic contact point for this path.
-- **Always-loaded rule (probabilistic):** the standing rule also lives in `~/.claude/rules/delegation.md` (installed by the `/delegation-tiering:canary` command if missing), so it holds even when this skill is never invoked and survives compaction.
-
-Alongside the layers, observability: this plugin's PostToolUse hook (`hooks/delegation-ledger.js`) records every delegation to the plugin's data directory — the gate makes models explicit; the ledger makes tier choices reviewable.
-
-Not covered: the `claude -p` spawn itself, which is a Bash command rather than a delegation call — choose that session's model deliberately. The child session then gates its own delegations normally, since it loads the same plugins and hooks.
-
-Maintenance: `Agent` and `Workflow` are documented tool names, but a rename would disable the gate silently — after a Claude Code update, run `/delegation-tiering:canary` (one Agent call without `model` and one Workflow script containing a model-less `agent()` call; expect both denied).
+This plugin's PreToolUse hook denies an Agent call that names no `model` (except a fork, or any call while `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on), and lints a Workflow script at launch, denying any `agent()` call with no `model:` key in its own argument list. The denial carries the fix, escape marker included. The lint is a string scan, not a parse: a model passed through a variable, a spread, or a shared options object is flagged, and a `/* model-gate:allow */` comment inside that call's argument list lets it pass. Nothing checks a named workflow, an unreadable `scriptPath`, or the agents a running workflow spawns, so keep the rule there by hand. A `claude -p` child is a Bash command, not a delegation: choose its model deliberately; the child session then gates its own delegations. A gate that cannot start allows every call without notice, so after a Claude Code or runtime change, run `/delegation-tiering:canary` to prove both deny paths. Mechanics and limits: the plugin's `hooks/README.md`.
 
 ## Source
 
-- Rationale beyond this skill: [Claude models explained: choosing the best model for your use case](https://claude.com/blog/claude-models-explained-choosing-the-best-model-for-your-use-case) — the post behind the selection framework and the advisor figure.
-- Model facts (IDs, tiers, pricing, effort vocabulary): the maintained anchors are the [platform models overview](https://platform.claude.com/docs/en/about-claude/models/overview) and the local `claude-api` skill — not this skill.
+- Selection framework: [Claude models explained](https://claude.com/blog/claude-models-explained-choosing-the-best-model-for-your-use-case). Anthropic's default model and escalation order: [choosing a model](https://platform.claude.com/docs/en/about-claude/models/choosing-a-model).
+- Model facts (IDs, pricing, effort support): the [platform models overview](https://platform.claude.com/docs/en/about-claude/models/overview), read live; the local `claude-api` skill caches a model table that can lag a launch.
+- Mechanics above last verified 2026-10-08; the [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) holds each claim's source and date.

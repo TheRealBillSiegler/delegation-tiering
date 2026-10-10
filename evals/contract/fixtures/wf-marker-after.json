@@ -1,0 +1,1 @@
+{"_purpose":"Workflow lint: a model-gate:allow marker that sits after the call's closing paren does not suppress it; the marker is scoped to the call's own argument list. Regression for the span-masking defect measured 2026-10-08.","tool_name":"Workflow","tool_input":{"script":"await agent('x', opts); /* model-gate:allow */ await agent('y', { model: 'haiku' });"}}

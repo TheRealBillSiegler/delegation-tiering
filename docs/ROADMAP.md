@@ -4,8 +4,8 @@ Enforcement the plugin could add but deliberately has not. Each entry names the 
 
 ## Scoped rationale gate
 
-Deny top-tier Agent calls (`fable`, or `opus` when it is the session's top tier) whose input carries no rationale marker.
+Deny `fable` Agent calls whose input carries no rationale marker. Fable is the ladder's escalation tier, so each call has a reason to state.
 
 - **Why deferred:** rationale strings demanded on every call degrade into gate-passing boilerplate.
-- **Trigger to build:** the weekly ledger summary shows top-tier over-provisioning actually happening — a sustained top-tier share on mechanical-sounding delegations. The 7-day delegation mix it prints is the evidence base.
-- **Scope:** top-tier calls only.
+- **Trigger to build:** the ledger summary, run on demand, shows fable over-provisioning actually happening — a sustained fable share on delegations that are not escalations. The 7-day delegation mix it prints is the evidence base. Nearest observation: on 2026-09-04 fable was a third of all model names in workflow scripts, with no per-spawn descriptions to say what those agents did; the routing-impact study is the instrument that can tell.
+- **Scope:** `fable` calls only.

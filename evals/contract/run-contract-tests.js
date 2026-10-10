@@ -17,15 +17,35 @@ const { LADDER: TIERS, MODELS } = require(path.join(__dirname, '..', '..', 'hook
 const CASES = [
   { fixture: 'agent-no-model.json', expect: { decision: 'deny', contains: ['no explicit model', 'lowest sufficient tier', TIERS] } },
   { fixture: 'agent-with-model.json', expect: { decision: 'allow', contains: ['chosen tier sonnet'], absent: [TIERS] } },
+  { fixture: 'agent-fork-no-model.json', expect: { decision: 'allow', contains: ['fork', 'non-fork subagent'], absent: [TIERS] } },
+  // env-vars.md: an on/off variable is on for `1`, `true`, `yes`, or `on`, in any casing.
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '1' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'TRUE' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'yes' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'On' }, expect: { decision: 'allow', contains: ['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '0' }, expect: { decision: 'deny', contains: ['no explicit model'] } },
+  { fixture: 'agent-force-no-model.json', env: { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: 'off' }, expect: { decision: 'deny', contains: ['no explicit model'] } },
   { fixture: 'wf-masking.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('do x')"] } },
   { fixture: 'wf-clean.json', expect: { decision: 'allow', contains: ['lints clean'], absent: [TIERS] } },
   { fixture: 'wf-predefined.json', expect: { decision: 'allow', contains: ['cannot be linted'] } },
+  { fixture: 'wf-string-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-comment-mention.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  // Own-arguments lint: a call passes on a model key inside its own balanced argument list, and nowhere else.
+  { fixture: 'wf-later-model.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('do x')"] } },
+  { fixture: 'wf-prompt-model.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', 'Pick the model'] } },
+  { fixture: 'wf-marker-inside.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-marker-after.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('x', opts)"] } },
+  { fixture: 'wf-quoted-key.json', expect: { decision: 'allow', contains: ['lints clean'] } },
+  { fixture: 'wf-truncated.json', expect: { decision: 'deny', contains: ['1 agent() call(s) without an explicit model', "agent('x', { effort: 'low'"] } },
 ];
 
 // Gate cases share a temp ledger so denial-logging is assertable.
 const osMod = require('os');
 const tmpGateLedger = path.join(osMod.tmpdir(), 'gate-deny-ledger-test-' + process.pid + '.jsonl');
-const gateEnv = { ...process.env, DELEGATION_LEDGER: tmpGateLedger };
+// The forcing variable is stripped so a developer who has it set still runs
+// the deny cases; cases that need it set it themselves.
+const { CLAUDE_CODE_SUBAGENT_MODEL_FORCE: _forced, ...baseEnv } = process.env;
+const gateEnv = { ...baseEnv, DELEGATION_LEDGER: tmpGateLedger };
 
 let failures = 0;
 // Counted as denials happen rather than hardcoded, so adding a deny case above
@@ -34,7 +54,7 @@ let failures = 0;
 let deniesObserved = 0;
 for (const c of CASES) {
   const input = fs.readFileSync(path.join(FIXTURES, c.fixture));
-  const stdout = execFileSync('node', [HOOK], { input, env: gateEnv }).toString();
+  const stdout = execFileSync('node', [HOOK], { input, env: { ...gateEnv, ...c.env } }).toString();
   const out = JSON.parse(stdout).hookSpecificOutput;
   const decision = out.permissionDecision === 'deny' ? 'deny' : 'allow';
   if (decision === 'deny') deniesObserved++;
@@ -45,9 +65,9 @@ for (const c of CASES) {
   for (const s of c.expect.absent || []) if (text.includes(s)) problems.push(`unexpected "${s}"`);
   if (problems.length) {
     failures++;
-    console.error(`FAIL ${c.fixture}: ${problems.join('; ')}`);
+    console.error(`FAIL ${c.fixture}${c.env ? ' ' + JSON.stringify(c.env) : ''}: ${problems.join('; ')}`);
   } else {
-    console.log(`ok   ${c.fixture}`);
+    console.log(`ok   ${c.fixture}${c.env ? ' ' + JSON.stringify(c.env) : ''}`);
   }
 }
 

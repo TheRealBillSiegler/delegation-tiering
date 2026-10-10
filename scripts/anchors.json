@@ -1,13 +1,15 @@
 {
-  "capturedAt": "2026-08-15T21:55:20.781Z",
-  "claudeVersion": "2.1.224 (Claude Code)",
+  "capturedAt": "2026-09-14T15:38:39.130Z",
+  "claudeVersion": "2.1.263 (Claude Code)",
+  "normalization": "links-stripped-v1",
   "pages": {
-    "https://code.claude.com/docs/en/hooks-guide.md": "988a0517b43b96726248a7707712769981c300e34dc8d9cf839c3ebd7e23d916",
-    "https://code.claude.com/docs/en/hooks.md": "2d12e3861770c65b0db9a3bf3cea34e90925ad3fa5622203246a98eb53a2e5d2",
-    "https://code.claude.com/docs/en/memory.md": "714ee359ae36615df0a70335ebc6bc78c42e01dcc32e616c736ded37c666d2b6",
-    "https://code.claude.com/docs/en/plugins-reference.md": "8d7a7c0649dec858c9d48072af247092ec0c82678ed70b3d4251748c822124ed",
-    "https://code.claude.com/docs/en/sub-agents.md": "ca660359d8230ec7198f05a70943df5bb0474dfe71710a6955811d639890861f",
-    "https://code.claude.com/docs/en/tools-reference.md": "cd52913f34684558355038825aa9df0084a07fa7db8435201a170bf2f460e076",
-    "https://code.claude.com/docs/en/workflows.md": "afbe8d3bf0156f26f35a2db99690c7a947fc1d16709c08a03dea3f3cfca2ca1b"
+    "https://code.claude.com/docs/en/advisor.md": "006cc28df11e012955f394afdb2a75a1025fc776961fa36fb3b9cebdec943dfb",
+    "https://code.claude.com/docs/en/hooks-guide.md": "0038224eec522240dff79767b10f71051a6fdfe94b546558e81a3c4fc254ca55",
+    "https://code.claude.com/docs/en/hooks.md": "5257fa68a979cbc8fda1b04a6d82894c04445e2ddbc7134c49e13d69956d779e",
+    "https://code.claude.com/docs/en/memory.md": "fe8c20ac390012f704a79f48ce4d71ba8603c814b01c31e56a49f5e2f1658008",
+    "https://code.claude.com/docs/en/plugins-reference.md": "bfa2a475cf63fabd9be5688289d05e581bc2af20c3e4da253f1e188a1d2b8c1f",
+    "https://code.claude.com/docs/en/sub-agents.md": "ca866c6a13add4f7ecd04534a41351b1f3e4434c4fe73dae1892280abca632a6",
+    "https://code.claude.com/docs/en/tools-reference.md": "41ad78be7e65bfe798474dcf5a79779162e2a2feb3ea7cb91c3d14b06540cc1c",
+    "https://code.claude.com/docs/en/workflows.md": "b6e586a8e63c76ee0adabe9ad77871fd60dadf9f6ee46c105b85f99d9685f24d"
   }
 }
