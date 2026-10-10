@@ -11,7 +11,7 @@
 // comments are blanked before the scan (since 0.1.2), so `agent(` or `model:`
 // inside a prompt string or a comment is not read as code; a backtick inside a
 // template placeholder still desyncs the scan. Each call is judged on its own
-// balanced argument list (since 0.1.4), so a `model:` in later code or in the
+// balanced argument list (since 0.1.2), so a `model:` in later code or in the
 // call's prompt cannot mask it. A call whose model arrives via a variable, a
 // spread, or a shared options object has no `model` key and is flagged:
 // suppress it with a `/* model-gate:allow */` comment inside that call's

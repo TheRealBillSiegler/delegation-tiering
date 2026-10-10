@@ -1,6 +1,6 @@
 # Lineup 5.5 renovation and prior-art sweep — research record, 2026-10-08
 
-Status: ruled by the owner on 2026-10-08; the remedies land in release 0.1.3 on branch `release/0.1.3`. This record backs a renovation of the delegation-tiering skill for the Claude 5.5 lineup, a second prior-art sweep, and the owner's ruling on the top of the ladder.
+Status: ruled by the owner on 2026-10-08. The remedies were drafted as release 0.1.3; on 2026-10-09 the owner folded them, with the lint fix drafted as 0.1.4, into release 0.1.2, the first release after 0.1.1. In this record, 0.1.2 names the draft on PR #19 as of 2026-10-08, and 0.1.3 names the remedies below. This record backs a renovation of the delegation-tiering skill for the Claude 5.5 lineup, a second prior-art sweep, and the owner's ruling on the top of the ladder.
 
 Trigger: the owner reported on 2026-10-08 that the skill predates Claude Opus 5.5 and Claude Haiku 5.5. The skill text in force is release 0.1.2 (branch `release/0.1.2`, PR #19, unmerged).
 
