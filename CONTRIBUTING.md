@@ -60,4 +60,4 @@ READMEs and `docs/` prose.
 
 ## Reporting problems
 
-Open a [GitHub issue](https://github.com/TheRealBillSiegler/delegation-tiering/issues). For a gate that seems dead (delegations passing with no model named), run `/delegation-tiering:canary` first and include its output — the most likely cause is the missing-runtime fail-open documented in [docs/COVERAGE.md](docs/COVERAGE.md) (dependency A9).
+Open a [GitHub issue](https://github.com/TheRealBillSiegler/delegation-tiering/issues). For a gate that seems dead (delegations passing with no model named), run `/delegation-tiering:canary` first and include its output and `claude --version` — the gate fails closed only on Claude Code 2.1.295 and later, as documented in [docs/COVERAGE.md](docs/COVERAGE.md) (dependency A9).

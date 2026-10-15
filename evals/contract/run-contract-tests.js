@@ -200,6 +200,26 @@ try {
   try { fs.unlinkSync(tmpGateLedger); } catch {}
 }
 
+// Fail-closed wiring: a gate that cannot start (no `node` on PATH, a missing
+// script) must block the call, so the PreToolUse gate sets onFailure "block"
+// (Claude Code 2.1.295 and later). The PostToolUse ledger records after the
+// call has run and stays fail-open: there is nothing left for it to block.
+try {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'hooks', 'hooks.json'), 'utf8'));
+  const gateHooks = manifest.hooks.PreToolUse.flatMap((m) => m.hooks).filter((h) => (h.args || []).some((a) => a.endsWith('agent-model-gate.js')));
+  const ledgerHooks = manifest.hooks.PostToolUse.flatMap((m) => m.hooks);
+  const gateBlocks = gateHooks.length > 0 && gateHooks.every((h) => h.onFailure === 'block');
+  const ledgerOpen = ledgerHooks.every((h) => h.onFailure === undefined || h.onFailure === 'continue');
+  if (gateBlocks && ledgerOpen) console.log('ok   gate fails closed, ledger fails open (hooks.json onFailure)');
+  else {
+    failures++;
+    console.error(`FAIL onFailure wiring: gate hooks ${JSON.stringify(gateHooks.map((h) => h.onFailure))}, ledger hooks ${JSON.stringify(ledgerHooks.map((h) => h.onFailure))}`);
+  }
+} catch (e) {
+  failures++;
+  console.error('FAIL onFailure wiring: ' + e.message);
+}
+
 // The hook's own span-boundary self-test is part of the contract.
 try {
   execFileSync('node', [HOOK, '--test']);

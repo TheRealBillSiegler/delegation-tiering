@@ -20,6 +20,8 @@ Or direct from this repo, which self-registers as a one-plugin marketplace:
 
 The doubled name in the second form is correct — the marketplace and the plugin share the repo's name.
 
+Requires Claude Code 2.1.295 or later and `node` on `PATH`; the version is the one that honors the gate's fail-closed setting (see Verify).
+
 ## Components
 
 | Component | What it does | Fires when |
@@ -43,7 +45,7 @@ In a live session with the plugin enabled:
 /delegation-tiering:canary
 ```
 
-It installs the always-loaded rule file and proves both deny paths live. Run it because the gate's worst failure is silent: if `node` does not resolve when the hook runs, the hook produces no output, and a hook with no output is an allow — no denial, no ledger line, and no error the model can see (the hooks page describes a non-blocking failure notice for a hook that cannot start; a headless run on 2026-09-14 showed none). The plugin looks installed and enforces nothing. The canary is the detector; the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) (dependency A9).
+It installs the always-loaded rule file and proves both deny paths live. Run it after installing and after any Claude Code or runtime change. The gate's hook sets `onFailure: "block"`, so when `node` does not resolve, Claude Code blocks every Agent and Workflow call with a hook error that names the missing executable (live 2026-10-15, headless, Claude Code 2.1.296). The ledger hook stays fail-open, so ledger lines stop while the runtime is missing. Claude Code before 2.1.295 does not document the setting and was not tested with it; there, treat the gate as fail-open, the behavior before 0.2.0: a missing `node` let every call through with no error the model sees. the dated claim lives in the repo's [coverage matrix](https://github.com/TheRealBillSiegler/delegation-tiering/blob/main/docs/COVERAGE.md) (dependency A9).
 
 ## Configuration
 

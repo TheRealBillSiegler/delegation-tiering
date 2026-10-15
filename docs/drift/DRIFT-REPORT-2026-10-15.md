@@ -38,18 +38,18 @@ advisor.md (A13 holds), context-window.md (A6 holds), env-vars.md (A20's on-valu
 ## Corrections made in this release
 
 - COVERAGE row A8 cites sub-agents.md for the mod override on subagents and keeps the workflow-agent half docs silent.
-- COVERAGE row A9 and the intro name the `onFailure: "block"` setting and state that `hooks/hooks.json` leaves it unset.
+- COVERAGE row A9 and the intro cite the `onFailure: "block"` setting; see the owner's decision below.
 - COVERAGE row A14 quotes the effort qualifier and the internal-agents sentence.
 - COVERAGE row A17 cites plugins-reference.md for the Bash half; the `!` half stays empirical.
 - COVERAGE row A19 cites the fork-request sentence beside the 2026-10-08 probe.
 - COVERAGE row A20 records that the setting reaches workflow agents.
 - COVERAGE row A21 lists every fallback case on the page and the fallback chain.
-- The skill's Enforcement sentence says the model sees no error from a gate that cannot start, and its verification stamp reads 2026-10-15.
+- The skill's Enforcement sentence describes the fail-closed gate, and its verification stamp reads 2026-10-15.
 - The README's off-switch link points to the plugins CLI reference.
 
-## Open for the owner
+## Owner decision, same day
 
-Setting `"onFailure": "block"` on the gate's two hooks makes a gate that cannot start deny every Agent and Workflow call. That is a change to enforcement, and the research record notes that an unknown hook key on an older Claude Code may break hook loading, as the 0.1.1 manifest defect did. This report leaves the setting unchanged.
+The owner chose to ship the fail-closed setting in 0.2.0. The gate's PreToolUse hook sets `"onFailure": "block"`, and the PostToolUse ledger hook keeps the default, since it runs after the call and has nothing to block. A headless run with `node` removed from `PATH` let a model-less Agent call run before the change and blocked it with a hook error after. The research record's caution about unknown hook keys on an older Claude Code stands: the README states 2.1.295 as the minimum, and older versions were not tested.
 
 ## Method and limitations
 

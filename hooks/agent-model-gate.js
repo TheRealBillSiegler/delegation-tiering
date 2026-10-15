@@ -157,8 +157,9 @@ process.stdin.on('end', () => {
   } catch {
     // Unparseable input: fail open (no output = allow) rather than block all
     // delegation. Deliberate: the harness serializes tool_input itself, so the
-    // realistic trigger is a harness bug — and the platform already fails open
-    // on hook crash, so fail-closed here would not make the gate airtight.
+    // realistic trigger is a harness bug. A crash or a missing runtime is a
+    // hook failure instead, which hooks.json's onFailure "block" turns into a
+    // blocked call.
     return;
   }
   const ti = input.tool_input || {};

@@ -8,7 +8,8 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/agent-model-gate.js"],
-            "timeout": 10
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       }
