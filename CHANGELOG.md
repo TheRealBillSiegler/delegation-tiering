@@ -4,11 +4,13 @@ Versions here are the `version` field in `.claude-plugin/plugin.json`, which Cla
 
 Versioning is [semantic](https://semver.org) with one deliberate exception: **pre-1.0, breaking changes ship as MINOR**, not MAJOR — reserving 1.0.0 for a stability commitment this plugin has not made. Anything breaking is called out in its entry.
 
+Which tier a change takes (ruled 2026-10-15 in #12): a change that leaves the payload untouched takes no version; a breaking change, or one that changes the scenario answer key in `evals/scenarios.md`, is minor; anything else is a patch.
+
 ## delegation-tiering
 
-### 0.1.2
+### 0.2.0
 
-The tier ladder for the Claude 5.5 lineup, a shorter skill, corrections to shipped prose, and fixes to the gate and the Workflow lint. The work drafted as 0.1.3 and 0.1.4 ships here; neither version was released. **Ladder semantics change:** the open adversarial gate, open-ended design, and security-boundary reads move from fable to opus.
+The tier ladder for the Claude 5.5 lineup, a shorter skill, corrections to shipped prose, and fixes to the gate and the Workflow lint. The work drafted as 0.1.2, 0.1.3, and 0.1.4 ships here; none of those versions was released. It is a minor release because the answer key and the lint's behavior change. **Ladder semantics change:** the open adversarial gate, open-ended design, and security-boundary reads move from fable to opus.
 
 - **The top of the ladder sent three roles to fable that no measurement separates from opus.** Opus 5.5 "performs at the level of Claude Fable 5.1 on most work", its per-token price is 40% of Fable 5.1's ($4/$20 against $10/$50 per MTok), and Anthropic's choosing-a-model page starts most workloads on Opus 5.5 and moves to Fable when evals at `xhigh` or `max` fall short. Opus now takes the open adversarial gate (once per claim), open-ended design, and security-boundary reads at high to `xhigh`; fable takes work an opus attempt at `xhigh` fell short on, and one re-run of a gate verdict the orchestrator rejects before any fix lands. The opus band reaches `xhigh`, a model the session cannot delegate to hands its tier to the next one up, and `hooks/tiers.js` and the gate's denial text follow.
 - **The skill said the Agent tool takes no per-call effort.** It has since Claude Code 2.1.292. The skill now asks Claude to pass `effort` inside the tier's band on every Agent call whose schema lists the parameter, and says an omitted effort runs at the session's level, not the model's default.

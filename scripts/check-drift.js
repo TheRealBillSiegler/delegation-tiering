@@ -2,7 +2,7 @@
 // Deterministic drift detection for the claims this plugin anchors to living
 // sources: the Claude Code doc pages it cites. Compares SHA-256 of each page
 // body, with link targets and bare URLs stripped first, against
-// scripts/anchors.json. Link stripping (since 0.1.2) keeps site-wide link
+// scripts/anchors.json. Link stripping (since 0.2.0) keeps site-wide link
 // rewrites, which changed every page on 2026-08-09 and touched no claim, from
 // counting as drift. The installed Claude Code version is recorded and
 // reported but is not a drift trigger: releases land most days.
