@@ -48,7 +48,7 @@ It installs the always-loaded rule file and proves both deny paths live. Run it 
 ## Configuration
 
 - **Ledger location** — `${CLAUDE_PLUGIN_DATA}/delegation-ledger.jsonl`, the [per-plugin data directory](https://code.claude.com/docs/en/plugins-reference) Claude Code provisions and exports to hook processes. Set `DELEGATION_LEDGER` to redirect it elsewhere.
-- **Off switch:** `/plugin disable delegation-tiering` turns the plugin off ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). Uninstalling from the plugin's last scope removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
+- **Off switch:** `/plugin disable delegation-tiering` turns the plugin off ([plugins CLI reference](https://code.claude.com/docs/en/plugins/cli-reference)). Uninstalling from the plugin's last scope removes the ledger along with the plugin's data directory — pass `--keep-data` to keep it. The rule file `~/.claude/rules/delegation.md` is left alone: it lives with your personal rules, not with the plugin.
 
 ## Three-layer enforcement
 

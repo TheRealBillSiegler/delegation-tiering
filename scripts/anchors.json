@@ -1,15 +1,19 @@
 {
-  "capturedAt": "2026-09-14T15:38:39.130Z",
-  "claudeVersion": "2.1.263 (Claude Code)",
+  "capturedAt": "2026-10-15T20:19:03.416Z",
+  "claudeVersion": "2.1.296 (Claude Code)",
   "normalization": "links-stripped-v1",
   "pages": {
-    "https://code.claude.com/docs/en/advisor.md": "006cc28df11e012955f394afdb2a75a1025fc776961fa36fb3b9cebdec943dfb",
-    "https://code.claude.com/docs/en/hooks-guide.md": "0038224eec522240dff79767b10f71051a6fdfe94b546558e81a3c4fc254ca55",
-    "https://code.claude.com/docs/en/hooks.md": "5257fa68a979cbc8fda1b04a6d82894c04445e2ddbc7134c49e13d69956d779e",
-    "https://code.claude.com/docs/en/memory.md": "fe8c20ac390012f704a79f48ce4d71ba8603c814b01c31e56a49f5e2f1658008",
-    "https://code.claude.com/docs/en/plugins-reference.md": "bfa2a475cf63fabd9be5688289d05e581bc2af20c3e4da253f1e188a1d2b8c1f",
-    "https://code.claude.com/docs/en/sub-agents.md": "ca866c6a13add4f7ecd04534a41351b1f3e4434c4fe73dae1892280abca632a6",
-    "https://code.claude.com/docs/en/tools-reference.md": "41ad78be7e65bfe798474dcf5a79779162e2a2feb3ea7cb91c3d14b06540cc1c",
-    "https://code.claude.com/docs/en/workflows.md": "b6e586a8e63c76ee0adabe9ad77871fd60dadf9f6ee46c105b85f99d9685f24d"
+    "https://code.claude.com/docs/en/advisor.md": "f0c0b7d2f5e235b8f8ba7b33b4ab902afe9977db51ffd325f9c06d317b3288c1",
+    "https://code.claude.com/docs/en/context-window.md": "45e56464b8f2e90f3f4560dbcf1e7c67465c2f9c66d155504130fece202416bc",
+    "https://code.claude.com/docs/en/env-vars.md": "1805b2b00d6754baf0fe45b8102f8a1e91eb38f9c4d792220577fb7fc130828a",
+    "https://code.claude.com/docs/en/hooks-guide.md": "69bcd1a49bebdcb46b4d1bf88727b56057287a376d94e528fc2a9608857b61fb",
+    "https://code.claude.com/docs/en/hooks.md": "6b7719f0e8bb3fd87c4e0400443f1b0489b14569339632e14a290dcf7c26fa39",
+    "https://code.claude.com/docs/en/memory.md": "c42f50955d9e1cddb25236a7ddb6c5f0bad9fd0072e960495654590c82df9aea",
+    "https://code.claude.com/docs/en/model-config.md": "0fe7a34fbd39e8c91993dd95d8fc58668e3a9ed2ea4a2aa8136c8e6e04d8745a",
+    "https://code.claude.com/docs/en/plugins-reference.md": "8138d616eb10b1a23be3c73e9421b02a633c192215922d0eb38d43223947b311",
+    "https://code.claude.com/docs/en/plugins/cli-reference.md": "d1c3ca7f675095d7b79ccf79cd96e28ee7a2e1acd26c000dc8e5279eebc4da65",
+    "https://code.claude.com/docs/en/sub-agents.md": "f1fd2db8a34ffbaa6e42671d1495792745b882c92e6863b10016e81368533652",
+    "https://code.claude.com/docs/en/tools-reference.md": "0425bc3bfcc9f3b7cd55ce14e715e7e2d46e2f7087bd64711c44ae383924cddb",
+    "https://code.claude.com/docs/en/workflows.md": "a4e26cace4b4971bb76454c6b65e5c38e91611b3cdad66639cb198f5ff30146b"
   }
 }
