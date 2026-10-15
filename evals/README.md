@@ -2,7 +2,7 @@
 
 What the evals verify, where each layer's cases come from, and how the set grows. The layers are ordered by what they can prove: deterministic contract → live behavior → skill application quality.
 
-Directory map — this repo ships one plugin, so the eval tree is flat: [contract/](contract/) — contract tests and fixtures (layer 1; own README); [routing-impact-study/](routing-impact-study/) — the routing-impact study protocol for the tier-policy outcome study, written for pre-registration but still a draft: not yet registered, by its own status line; [scenarios.md](scenarios.md) — tier-assignment scenarios (layer 3). The steering-claude-code skill's application scenarios live in that plugin's own repo: [steering-claude-code/evals/scenarios.md](https://github.com/TheRealBillSiegler/steering-claude-code/blob/main/evals/scenarios.md).
+Directory map — this repo ships one plugin, so the eval tree is flat: [contract/](contract/) — contract tests and fixtures (layer 1; own README); [routing-impact-study/](routing-impact-study/) — the routing-impact study protocol for the tier-policy outcome study, written for pre-registration but still a draft: not yet registered, by its own status line; [validation-program/](validation-program/) — the empirical validation program: the on-disk audits, the lint mutation test, attempt 1 of the footprint trial with its results, and the attempt-2 protocol draft with its three review rounds; [scenarios.md](scenarios.md) — tier-assignment scenarios (layer 3). The steering-claude-code skill's application scenarios live in that plugin's own repo: [steering-claude-code/evals/scenarios.md](https://github.com/TheRealBillSiegler/steering-claude-code/blob/main/evals/scenarios.md).
 
 ```mermaid
 flowchart TD

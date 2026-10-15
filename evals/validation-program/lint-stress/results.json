@@ -1,0 +1,76 @@
+{
+  "corpus": {
+    "files": 201,
+    "unique": 200,
+    "callsTotal": 560,
+    "unbalancedCalls": 0
+  },
+  "baseline": {
+    "flaggedCalls": 0,
+    "scriptsWithFlag": 0,
+    "scriptsLinted": 200
+  },
+  "mutation": {
+    "mutants": 559,
+    "caught": 553,
+    "masked": 6,
+    "recall": 0.9892665474060823,
+    "ci95": [
+      0.9767850487427945,
+      0.996051109666702
+    ],
+    "spuriousMutants": 0,
+    "spuriousFlagsTotal": 0,
+    "scriptsWithMutants": 200,
+    "perScriptMeanRecall": 0.9820833333333333,
+    "scriptsWithAnyMasked": 6,
+    "maskedReasons": {
+      "after-call code-level model: (later code in span)": 5,
+      "own-args model: text in string/comment": 1
+    }
+  },
+  "indirect": {
+    "directModel": 559,
+    "noDirect": 1,
+    "spread": 0,
+    "varArg": 0,
+    "shorthand": 0,
+    "nestedOnly": 0,
+    "none": 1,
+    "passViaSpanText": 1,
+    "passViaMarker": 0,
+    "quotedKey": 0,
+    "allowMarkers": 0,
+    "scriptsWithAllow": 0,
+    "note": "noDirect = calls with no options-object model: property in their own args; passViaSpanText/passViaMarker = of those, how they pass lint"
+  },
+  "denials": {
+    "transcripts": 163,
+    "jsonParseErrors": 0,
+    "all": {
+      "denials": 7,
+      "withScript": 7,
+      "stillDeniedByCurrentLint": 2,
+      "trulyModelless": 2,
+      "lintDeniesButNoModellessCall": 0,
+      "modellessButLintPasses": 0
+    },
+    "deliberate": {
+      "denials": 2,
+      "withScript": 2,
+      "stillDeniedByCurrentLint": 2,
+      "trulyModelless": 2,
+      "lintDeniesButNoModellessCall": 0,
+      "modellessButLintPasses": 0
+    },
+    "organic": {
+      "denials": 5,
+      "withScript": 5,
+      "stillDeniedByCurrentLint": 0,
+      "trulyModelless": 0,
+      "lintDeniesButNoModellessCall": 0,
+      "modellessButLintPasses": 0
+    },
+    "probeByScriptTextOnly": 0
+  }
+}

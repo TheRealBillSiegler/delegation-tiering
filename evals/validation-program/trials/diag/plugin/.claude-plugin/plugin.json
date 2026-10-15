@@ -1,0 +1,1 @@
+{ "name": "trial-diag", "version": "0.0.1", "description": "Instrument diagnostics for the Phase 2 trials: logs the effort level and env visible to a hook in an eval child." }
