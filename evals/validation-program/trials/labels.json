@@ -1,0 +1,359 @@
+{
+ "note": "Task labels from PROTOCOL.md (commit 81502b1), as data. prompt/labelText/rule are verbatim table cells. options: acceptable (model, effort-set) pairs for a single-delegation task; efforts null = no band stated. roles: workflow tasks; fanout = every agent() call site except the last in source order, gate = the last call site in source order (the verifier/merger). A workflow run agrees on model only if every call names a model and every role tier is in its role options.",
+ "levels": [
+  "low",
+  "medium",
+  "high",
+  "xhigh"
+ ],
+ "tiers": [
+  "haiku",
+  "sonnet",
+  "opus",
+  "fable"
+ ],
+ "tasks": [
+  {
+   "id": "T01",
+   "prompt": "Use a subagent to list every file under `<fx>/docs` with its length in lines.",
+   "labelText": "haiku; medium, low allowed",
+   "rule": "haiku row, inventory",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "haiku",
+     "efforts": [
+      "low",
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "prompt": "Have a subagent tell me the version string in `<fx>/.claude-plugin/plugin.json`.",
+   "labelText": "haiku; low or medium",
+   "rule": "haiku row, short item",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "haiku",
+     "efforts": [
+      "low",
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T03",
+   "prompt": "For each Markdown file under `<fx>/docs`, have a separate subagent return its first heading, in parallel.",
+   "labelText": "haiku; low",
+   "rule": "haiku row, short high-volume items",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "haiku",
+     "efforts": [
+      "low"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T04",
+   "prompt": "Have a subagent go through `<fx>/docs/ROADMAP.md` and decide, item by item, whether `<fx>/CHANGELOG.md` shows it already done.",
+   "labelText": "sonnet; medium",
+   "rule": "judgment creep leaves the haiku row",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "prompt": "Have a subagent copy out, word for word, every row of the verification-shape table in `<fx>/skills/delegation-tiering/SKILL.md`.",
+   "labelText": "haiku; medium, low allowed",
+   "rule": "haiku row, verbatim extraction",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "haiku",
+     "efforts": [
+      "low",
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T06",
+   "prompt": "Have a subagent convert the first table in `<fx>/docs/COVERAGE.md` to CSV and give me the CSV.",
+   "labelText": "haiku; medium, low allowed",
+   "rule": "haiku row, format conversion",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "haiku",
+     "efforts": [
+      "low",
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "prompt": "Delegate this: using only the files in `<fx>`, explain how the ledger file path is resolved and which environment variables change it.",
+   "labelText": "sonnet; medium",
+   "rule": "sonnet row, doc research",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T08",
+   "prompt": "Delegate this: read `<fx>/hooks/agent-model-gate.js` and `<fx>/hooks/README.md`, and list every place the README's description disagrees with the code.",
+   "labelText": "sonnet; medium",
+   "rule": "sonnet row, fidelity check",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T09",
+   "prompt": "Three fixes were claimed for this release: forks are allowed with a note; CLAUDE_CODE_SUBAGENT_MODEL_FORCE accepts 1, true, yes, and on in any case; the drift check keeps nested page paths. Have a subagent confirm each one against the code in `<fx>` and report pass or fail per fix.",
+   "labelText": "sonnet; medium",
+   "rule": "fix re-verification",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T10",
+   "prompt": "Get a subagent to review `<fx>/scripts/check-links.js` for error handling only.",
+   "labelText": "sonnet; high",
+   "rule": "lens review",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "high"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T11",
+   "prompt": "Design is settled: add a `--json` flag to `<fx>/scripts/check-version-bump.js` that prints `{ok, from, to, changed}` instead of text. Have a subagent write the patch as a unified diff in its reply, without editing files.",
+   "labelText": "sonnet; high",
+   "rule": "implementation from near-code design",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "high"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T12",
+   "prompt": "Last round's open review of `<fx>/hooks/agent-model-gate.js` found two issues, and both are now fixed: forks are allowed with a note, and the FORCE variable accepts every documented on-value. Run the round-2 re-gate: have a subagent check that those two fixes are in place.",
+   "labelText": "sonnet; medium",
+   "rule": "a re-gate of named fixes is fix re-verification",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "medium"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T13",
+   "prompt": "Before I ship this, I want an independent adversarial review of `<fx>/hooks/agent-model-gate.js`: whatever is wrong that nobody has listed yet. Use a fresh subagent so it isn't anchored on this conversation.",
+   "labelText": "opus; high or xhigh",
+   "rule": "open adversarial gate",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "opus",
+     "efforts": [
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T14",
+   "prompt": "Before we publish, have a subagent assess whether a crafted Workflow script or tool input could make `<fx>/hooks/agent-model-gate.js` allow a model-less delegation, or crash it in a way that disables the gate.",
+   "labelText": "opus; high or xhigh",
+   "rule": "security-boundary read",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "opus",
+     "efforts": [
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T15",
+   "prompt": "Have a subagent propose two or three designs, with trade-offs, for how `<fx>/hooks/delegation-ledger.js` should record the resolved model and the effort of every delegation, workflow workers included.",
+   "labelText": "opus; high or xhigh",
+   "rule": "open-ended design",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "opus",
+     "efforts": [
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T16",
+   "prompt": "Have a subagent work out, with an argument or a counterexample, whether `lintScript` in `<fx>/hooks/agent-model-gate.js` can both miss a model-less call and flag a model-bearing call in the same script.",
+   "labelText": "sonnet; high, or opus; medium to xhigh",
+   "rule": "reasoning-heavy work; opus only where sonnet falls short, so either agrees",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "sonnet",
+     "efforts": [
+      "high"
+     ]
+    },
+    {
+     "model": "opus",
+     "efforts": [
+      "medium",
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T17",
+   "prompt": "An opus review at xhigh effort of `<fx>/hooks/agent-model-gate.js` already ran and missed a masking defect that a mutation test found later. Get a stronger independent review of the lint logic.",
+   "labelText": "fable; high or xhigh",
+   "rule": "escalation after an opus xhigh attempt fell short",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "fable",
+     "efforts": [
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T18",
+   "prompt": "`<fx>/hooks/hooks.json` ships to every user's machine as production configuration. Have a subagent do the final adversarial review before release.",
+   "labelText": "opus; high or xhigh",
+   "rule": "the skill's production-config gate example",
+   "kind": "agent",
+   "options": [
+    {
+     "model": "opus",
+     "efforts": [
+      "high",
+      "xhigh"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T19",
+   "prompt": "Write and launch a workflow with the Workflow tool: one finder per file in `<fx>/scripts` looking for unhandled errors, then a single agent that verifies the combined findings.",
+   "labelText": "finders haiku or sonnet; the verifier opus, high or xhigh; every call names a model and an effort",
+   "rule": "cheap finders, one gate; workflow scripts",
+   "kind": "workflow",
+   "roles": {
+    "fanout": [
+     {
+      "model": "haiku",
+      "efforts": null
+     },
+     {
+      "model": "sonnet",
+      "efforts": null
+     }
+    ],
+    "gate": [
+     {
+      "model": "opus",
+      "efforts": [
+       "high",
+       "xhigh"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "T20",
+   "prompt": "Launch a workflow with the Workflow tool: three reviewers of `<fx>/skills/delegation-tiering/SKILL.md`, one per lens (accuracy against `<fx>/hooks`, clarity, internal consistency), then one agent that merges their findings.",
+   "labelText": "lens reviewers sonnet, high; the merger sonnet or opus; every call names a model and an effort",
+   "rule": "per-lens gates are lens review; workflow scripts",
+   "kind": "workflow",
+   "roles": {
+    "fanout": [
+     {
+      "model": "sonnet",
+      "efforts": [
+       "high"
+      ]
+     }
+    ],
+    "gate": [
+     {
+      "model": "sonnet",
+      "efforts": null
+     },
+     {
+      "model": "opus",
+      "efforts": null
+     }
+    ]
+   }
+  }
+ ]
+}

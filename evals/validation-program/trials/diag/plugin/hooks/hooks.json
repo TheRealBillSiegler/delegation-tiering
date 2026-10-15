@@ -1,0 +1,1 @@
+{ "hooks": { "PreToolUse": [ { "matcher": "Read|Skill|Agent", "hooks": [ { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/dump.js"], "timeout": 10 } ] } ] } }
